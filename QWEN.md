@@ -309,6 +309,18 @@ it('has emails', function (string $email) {
 | decoration-clone | box-decoration-clone |
 
 
+=== shadcn-vue/core rules ===
+
+## shadcn-vue UI Components
+
+- UI components should primarily come from https://www.shadcn-vue.com/
+- Use shadcn-vue components as the default choice for UI elements
+- Only when a required component is not available in shadcn-vue, consider:
+  1. Building a new component that follows shadcn-vue patterns
+  2. Searching for alternative components outside of shadcn-vue
+- Ensure any custom components follow the same design patterns and styling conventions as shadcn-vue components
+
+
 === tests rules ===
 
 ## Test Enforcement

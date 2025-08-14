@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { FileText, LayoutGrid, MessageCircle, Notebook, Send } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -14,20 +14,29 @@ const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
     },
+    {
+        title: 'AI Resume Builder',
+        href: '/ai-resume-builder',
+        icon: FileText,
+    },
+    {
+        title: 'Mock Interview',
+        href: '/mock-interview',
+        icon: MessageCircle,
+    },
+    {
+        title: 'Interview Question Bank',
+        href: '/interview-question-bank',
+        icon: Notebook,
+    },
+    {
+        title: 'AI Auto Apply',
+        href: '/ai-auto-apply',
+        icon: Send,
+    },
 ];
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
-];
+const footerNavItems: NavItem[] = [];
 </script>
 
 <template>
@@ -48,8 +57,11 @@ const footerNavItems: NavItem[] = [
             <NavMain :items="mainNavItems" />
         </SidebarContent>
 
-        <SidebarFooter>
+        <SidebarFooter v-if="footerNavItems.length > 0">
             <NavFooter :items="footerNavItems" />
+            <NavUser />
+        </SidebarFooter>
+        <SidebarFooter v-else>
             <NavUser />
         </SidebarFooter>
     </Sidebar>
