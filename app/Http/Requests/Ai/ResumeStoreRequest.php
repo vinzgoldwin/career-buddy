@@ -33,8 +33,8 @@ class ResumeStoreRequest extends FormRequest
             'educations.*.school' => ['nullable', 'string', 'max:255'],
             'educations.*.degree' => ['nullable', 'string', 'max:255'],
             'educations.*.field_of_study' => ['nullable', 'string', 'max:255'],
-            'educations.*.start_date' => ['nullable', 'date'],
-            'educations.*.end_date' => ['nullable', 'date', 'after_or_equal:educations.*.start_date'],
+            'educations.*.start_date' => ['nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\/\d{4}$/'],
+            'educations.*.end_date' => ['nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\/\d{4}$/'],
             'educations.*.currently_studying' => ['boolean'],
             'educations.*.grade' => ['nullable', 'string', 'max:50'],
             'educations.*.activities' => ['nullable', 'string', 'max:1000'],
@@ -44,8 +44,8 @@ class ResumeStoreRequest extends FormRequest
             'experiences.*.title' => ['nullable', 'string', 'max:255'],
             'experiences.*.company' => ['nullable', 'string', 'max:255'],
             'experiences.*.location' => ['nullable', 'string', 'max:255'],
-            'experiences.*.start_date' => ['nullable', 'date'],
-            'experiences.*.end_date' => ['nullable', 'date', 'after_or_equal:experiences.*.start_date'],
+            'experiences.*.start_date' => ['nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\/\d{4}$/'],
+            'experiences.*.end_date' => ['nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\/\d{4}$/'],
             'experiences.*.currently_working' => ['boolean'],
             'experiences.*.employment_type' => ['nullable', 'string', 'max:100'],
             'experiences.*.industry' => ['nullable', 'string', 'max:100'],
@@ -55,8 +55,8 @@ class ResumeStoreRequest extends FormRequest
             'licenses_and_certifications' => ['array'],
             'licenses_and_certifications.*.name' => ['nullable', 'string', 'max:255'],
             'licenses_and_certifications.*.issuing_organization' => ['nullable', 'string', 'max:255'],
-            'licenses_and_certifications.*.issue_date' => ['nullable', 'date'],
-            'licenses_and_certifications.*.expiration_date' => ['nullable', 'date', 'after_or_equal:licenses_and_certifications.*.issue_date'],
+            'licenses_and_certifications.*.issue_date' => ['nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\/\d{4}$/'],
+            'licenses_and_certifications.*.expiration_date' => ['nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\/\d{4}$/'],
             'licenses_and_certifications.*.credential_id' => ['nullable', 'string', 'max:255'],
             'licenses_and_certifications.*.credential_url' => ['nullable', 'url', 'max:255'],
 
@@ -64,8 +64,8 @@ class ResumeStoreRequest extends FormRequest
             'projects' => ['array'],
             'projects.*.name' => ['nullable', 'string', 'max:255'],
             'projects.*.description' => ['nullable', 'string', 'max:5000'],
-            'projects.*.start_date' => ['nullable', 'date'],
-            'projects.*.end_date' => ['nullable', 'date', 'after_or_equal:projects.*.start_date'],
+            'projects.*.start_date' => ['nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\/\d{4}$/'],
+            'projects.*.end_date' => ['nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\/\d{4}$/'],
             'projects.*.url' => ['nullable', 'url', 'max:255'],
             'projects.*.skills_used' => ['nullable', 'string', 'max:1000'],
 
@@ -84,10 +84,14 @@ class ResumeStoreRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'educations.*.end_date.after_or_equal' => 'End date must be after or equal to start date.',
-            'experiences.*.end_date.after_or_equal' => 'End date must be after or equal to start date.',
-            'licenses_and_certifications.*.expiration_date.after_or_equal' => 'Expiration date must be after or equal to issue date.',
-            'projects.*.end_date.after_or_equal' => 'End date must be after or equal to start date.',
+            'educations.*.start_date.regex' => 'Start date must be in MM/YYYY format.',
+            'educations.*.end_date.regex' => 'End date must be in MM/YYYY format.',
+            'experiences.*.start_date.regex' => 'Start date must be in MM/YYYY format.',
+            'experiences.*.end_date.regex' => 'End date must be in MM/YYYY format.',
+            'licenses_and_certifications.*.issue_date.regex' => 'Issue date must be in MM/YYYY format.',
+            'licenses_and_certifications.*.expiration_date.regex' => 'Expiration date must be in MM/YYYY format.',
+            'projects.*.start_date.regex' => 'Start date must be in MM/YYYY format.',
+            'projects.*.end_date.regex' => 'End date must be in MM/YYYY format.',
         ];
     }
 }
