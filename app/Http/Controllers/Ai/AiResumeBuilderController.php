@@ -4,12 +4,21 @@ namespace App\Http\Controllers\Ai;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ai\ResumeStoreRequest;
+use App\Services\PdfToTextService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class AiResumeBuilderController extends Controller
 {
+    protected PdfToTextService $pdfToTextService;
+
+    public function __construct(PdfToTextService $pdfToTextService)
+    {
+        $this->pdfToTextService = $pdfToTextService;
+    }
+
     /**
      * Display the AI Resume Builder page.
      *
@@ -213,6 +222,27 @@ class AiResumeBuilderController extends Controller
         }
 
         return redirect()->back()->with('success', 'Resume data saved successfully!');
+    }
+
+    /**
+     * Handle PDF resume upload and extract text.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function uploadResume(Request $request)
+    {
+        $request->validate([
+            'resume' => 'required|file|mimes:pdf|max:10240', // Max 10MB
+        ]);
+
+        $path = $request->file('resume')->getRealPath();
+        $text = $this->pdfToTextService->extract($path);
+        dd($text);
+
+        // Return the extracted text (you can continue from here)
+        return response()->json([
+            'text' => $text,
+        ]);
     }
 
     /**

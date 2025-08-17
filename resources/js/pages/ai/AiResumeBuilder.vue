@@ -6,15 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FileText, Upload, Sparkles, Plus, Trash2 } from 'lucide-vue-next';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { ref, reactive } from 'vue';
+import FullscreenDialog from '@/components/FullscreenDialog.vue';
+import FileUploadDialog from '@/components/FileUploadDialog.vue';
 
 // Define the structure of prefillData
 interface Education {
@@ -94,8 +88,8 @@ const formData = reactive({
   email: prefillData.email || user.email,
   website: prefillData.website || '',
   summary: prefillData.summary || '',
-  educations: prefillData.educations && prefillData.educations.length > 0 
-    ? prefillData.educations 
+  educations: prefillData.educations && prefillData.educations.length > 0
+    ? prefillData.educations
     : [{
         school: '',
         degree: '',
@@ -106,8 +100,8 @@ const formData = reactive({
         grade: '',
         activities: ''
       }],
-  experiences: prefillData.experiences && prefillData.experiences.length > 0 
-    ? prefillData.experiences 
+  experiences: prefillData.experiences && prefillData.experiences.length > 0
+    ? prefillData.experiences
     : [{
         title: '',
         company: '',
@@ -119,8 +113,8 @@ const formData = reactive({
         industry: '',
         description: ''
       }],
-  licenses_and_certifications: prefillData.licenses_and_certifications && prefillData.licenses_and_certifications.length > 0 
-    ? prefillData.licenses_and_certifications 
+  licenses_and_certifications: prefillData.licenses_and_certifications && prefillData.licenses_and_certifications.length > 0
+    ? prefillData.licenses_and_certifications
     : [{
         name: '',
         issuing_organization: '',
@@ -129,8 +123,8 @@ const formData = reactive({
         credential_id: '',
         credential_url: ''
       }],
-  projects: prefillData.projects && prefillData.projects.length > 0 
-    ? prefillData.projects 
+  projects: prefillData.projects && prefillData.projects.length > 0
+    ? prefillData.projects
     : [{
         name: '',
         description: '',
@@ -139,13 +133,17 @@ const formData = reactive({
         url: '',
         skills_used: ''
       }],
-  skills: prefillData.skills && prefillData.skills.length > 0 
-    ? prefillData.skills 
+  skills: prefillData.skills && prefillData.skills.length > 0
+    ? prefillData.skills
     : [{
         name: '',
         proficiency_level: 3
       }]
 });
+
+// Dialog states
+const isDialogOpen = ref(false);
+const isUploadDialogOpen = ref(false);
 
 // Add new item to array
 const addEducation = () => {
@@ -249,7 +247,25 @@ const submitForm = () => {
   });
 };
 
-const isDialogOpen = ref(false);
+// Handle file selection from upload dialog
+const handleFileSelected = (file: File) => {
+  isUploadDialogOpen.value = false;
+  
+  // Create FormData object
+  const formData = new FormData();
+  formData.append('resume', file);
+  
+  // Send the file to the backend
+  (router as any).post((window as any).route('ai-resume-builder.upload'), formData, {
+    onSuccess: (response: any) => {
+      console.log('File uploaded successfully:', response);
+      // You can continue from here with the extracted text
+    },
+    onError: (errors: any) => {
+      console.log('Upload errors:', errors);
+    }
+  });
+};
 </script>
 
 <template>
@@ -268,7 +284,7 @@ const isDialogOpen = ref(false);
             <div class="flex flex-col gap-6">
                 <div class="flex flex-col sm:flex-row gap-4">
                     <!-- Upload Resume Button -->
-                    <Button variant="outline" class="flex items-center gap-2 w-fit">
+                    <Button variant="outline" class="flex items-center gap-2 w-fit" @click="isUploadDialogOpen = true">
                         <Upload class="h-5 w-5" />
                         Upload Resume
                     </Button>
@@ -355,18 +371,14 @@ const isDialogOpen = ref(false);
                     </div>
                 </div>
 
-                <!-- Dialog for entering details -->
-                <Dialog v-model:open="isDialogOpen">
-                    <DialogContent class="max-w-4xl">
-                        <DialogHeader class="px-6 pt-6">
-                            <DialogTitle>Enter Your Professional Details</DialogTitle>
-                            <DialogDescription>
-                                Fill in your details below. All fields except name and email are optional.
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        <div class="overflow-y-auto max-h-[calc(90vh-140px)] px-6 pb-6">
-                          <form @submit.prevent="submitForm" class="space-y-6">
+                <!-- Full-screen Dialog for entering details -->
+                <FullscreenDialog 
+                  :open="isDialogOpen" 
+                  title="Enter Your Professional Details"
+                  description="Fill in your details below. All fields except name and email are optional."
+                  @close="isDialogOpen = false"
+                >
+                  <form @submit.prevent="submitForm" class="space-y-8">
                               <!-- Personal Information -->
                               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div class="space-y-2">
@@ -733,9 +745,8 @@ const isDialogOpen = ref(false);
                                   </div>
                               </div>
                           </form>
-                        </div>
-
-                        <DialogFooter class="px-6 py-4 border-t">
+                          
+                          <template #footer>
                             <Button type="button" variant="outline" @click="isDialogOpen = false">
                                 Cancel
                             </Button>
@@ -743,9 +754,15 @@ const isDialogOpen = ref(false);
                                 <Sparkles class="mr-2 h-4 w-4" />
                                 Create AI-Powered Resume
                             </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+                          </template>
+                </FullscreenDialog>
+                
+                <!-- File Upload Dialog -->
+                <FileUploadDialog 
+                  :open="isUploadDialogOpen" 
+                  @update:open="isUploadDialogOpen = $event"
+                  @file-selected="handleFileSelected"
+                />
             </div>
         </div>
     </AppLayout>

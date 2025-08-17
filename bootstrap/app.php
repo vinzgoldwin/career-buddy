@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+        
+        $middleware->validateCsrfTokens(except: [
+            'pdf/extract-text',
+            'ai-resume-builder/upload',
+        ]);
 
         $middleware->web(append: [
             HandleAppearance::class,
