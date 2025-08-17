@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Ai\ResumeStoreRequest;
 use App\Models\EmploymentType;
 use App\Services\PdfToTextService;
+use App\Services\ResumeParsingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -236,6 +237,8 @@ class AiResumeBuilderController extends Controller
      */
     public function uploadResume(Request $request)
     {
+        set_time_limit(150);
+
         $request->validate([
             'resume' => 'required|file|mimes:pdf|max:10240', // Max 10MB
         ]);
@@ -243,9 +246,35 @@ class AiResumeBuilderController extends Controller
         $path = $request->file('resume')->getRealPath();
         $text = $this->pdfToTextService->extract($path);
 
-        // Return the extracted text (you can continue from here)
+        // Process the extracted text with our resume parsing service
+        $resumeParsingService = new ResumeParsingService();
+        $response = $resumeParsingService->extractResumeInformation($text);
+
+        // Extract JSON from the response
+        $content = $response['choices'][0]['message']['content'] ?? '';
+
+        // Extract content between <structured_json> tags
+        if (preg_match('/<structured_json>(.*?)<\/structured_json>/s', $content, $matches)) {
+            $jsonString = $matches[1];
+            // Clean up the JSON string
+            $jsonString = trim($jsonString);
+            try {
+                $structuredData = json_decode($jsonString, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    return response()->json([
+                        'text' => $text,
+                        'structured_data' => $structuredData,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // Handle JSON parsing error
+            }
+        }
+
+        // Return the extracted text and raw AI response if JSON parsing fails
         return response()->json([
             'text' => $text,
+            'raw_response' => $content,
         ]);
     }
 

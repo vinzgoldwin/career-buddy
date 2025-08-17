@@ -35,6 +35,17 @@
 5. Multiple Queries - queries=["authentication", "middleware"] - ANY of these terms
 
 
+=== database safety rules ===
+
+## Database Safety
+- NEVER execute destructive database commands that can delete records unless specifically requested for testing purposes.
+- Avoid using commands like `DELETE`, `TRUNCATE`, `DROP`, or `UPDATE` without explicit user confirmation.
+- Always prefer read-only operations when exploring or querying the database.
+- Use the `database-query` tool only for SELECT statements and read operations.
+- When testing database operations, always use transactions that can be rolled back or work with test databases.
+- If you need to demonstrate database operations that modify data, always warn the user and confirm before proceeding.
+
+
 === inertia-laravel/core rules ===
 
 ## Inertia Core
