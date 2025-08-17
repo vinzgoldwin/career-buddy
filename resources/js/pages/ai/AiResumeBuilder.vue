@@ -29,7 +29,7 @@ interface Experience {
   start_date: string;
   end_date: string;
   currently_working: boolean;
-  employment_type: string;
+  employment_type_id: number | null;
   industry: string;
   description: string;
 }
@@ -529,7 +529,20 @@ const handleFileSelected = (file: File) => {
 
                                           <div class="space-y-2">
                                               <Label :for="'employment-type-' + index">Employment Type</Label>
-                                              <Input :id="'employment-type-' + index" v-model="experience.employment_type" placeholder="Full-time, Part-time, etc." />
+                                              <select
+                                                  :id="'employment-type-' + index"
+                                                  v-model="experience.employment_type_id"
+                                                  class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                              >
+                                                  <option value="">Select Employment Type</option>
+                                                  <option 
+                                                      v-for="employmentType in $page.props.employmentTypes" 
+                                                      :key="employmentType.id" 
+                                                      :value="employmentType.id"
+                                                  >
+                                                      {{ employmentType.name }}
+                                                  </option>
+                                              </select>
                                           </div>
 
                                           <div class="space-y-2">

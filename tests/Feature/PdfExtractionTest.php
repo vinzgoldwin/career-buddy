@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
@@ -9,6 +10,8 @@ use Tests\TestCase;
 
 class PdfExtractionTest extends TestCase
 {
+    use RefreshDatabase;
+
     #[Test]
     public function user_can_extract_text_from_pdf(): void
     {

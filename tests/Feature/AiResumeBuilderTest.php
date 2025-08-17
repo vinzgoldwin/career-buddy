@@ -129,16 +129,22 @@ class AiResumeBuilderTest extends TestCase
         $user = User::factory()->create();
 
         // Try to submit with invalid date format
-        $response = $this->actingAs($user)->post(route('ai-resume-builder.store'), [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'educations' => [
-                [
-                    'school' => 'University of California',
-                    'start_date' => '2023-01-01', // Invalid format (should be MM/YYYY)
+        $response = $this->actingAs($user)
+            ->from(route('ai-resume-builder')) // Add referrer to include CSRF token
+            ->post(route('ai-resume-builder.store'), [
+                'name' => 'John Doe',
+                'email' => 'john@example.com',
+                'educations' => [
+                    [
+                        'school' => 'University of California',
+                        'start_date' => '2023-01-01', // Invalid format (should be MM/YYYY)
+                    ]
                 ]
-            ]
-        ]);
+            ]);
+
+        // Debug the response
+        echo "Response status: " . $response->status() . "\n";
+        $response->dumpSession();
 
         // Should fail validation
         $response->assertSessionHasErrors([
@@ -146,16 +152,18 @@ class AiResumeBuilderTest extends TestCase
         ]);
 
         // Try with valid MM/YYYY format
-        $response = $this->actingAs($user)->post(route('ai-resume-builder.store'), [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'educations' => [
-                [
-                    'school' => 'University of California',
-                    'start_date' => '01/2023', // Valid format
+        $response = $this->actingAs($user)
+            ->from(route('ai-resume-builder')) // Add referrer to include CSRF token
+            ->post(route('ai-resume-builder.store'), [
+                'name' => 'John Doe',
+                'email' => 'john@example.com',
+                'educations' => [
+                    [
+                        'school' => 'University of California',
+                        'start_date' => '01/2023', // Valid format
+                    ]
                 ]
-            ]
-        ]);
+            ]);
 
         // Should pass validation
         $response->assertSessionDoesntHaveErrors('educations.0.start_date');

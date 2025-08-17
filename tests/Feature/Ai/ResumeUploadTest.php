@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Ai;
 
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
@@ -9,6 +11,8 @@ use Tests\TestCase;
 
 class ResumeUploadTest extends TestCase
 {
+    use RefreshDatabase;
+
     #[Test]
     public function user_can_upload_pdf_resume(): void
     {
@@ -68,12 +72,12 @@ endobj
 
 xref
 0 6
-0000000000 65535 f 
-0000000010 00000 n 
-0000000053 00000 n 
-0000000114 00000 n 
-0000000235 00000 n 
-0000000323 00000 n 
+0000000000 65535 f
+0000000010 00000 n
+0000000053 00000 n
+0000000114 00000 n
+0000000235 00000 n
+0000000323 00000 n
 trailer
 <<
 /Size 6
@@ -84,7 +88,7 @@ startxref
 %%EOF');
 
         // Authenticate the user (assuming you have authentication set up)
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user);
 
         // Make a request to upload the resume
@@ -102,7 +106,7 @@ startxref
     public function user_cannot_upload_non_pdf_files(): void
     {
         // Authenticate the user
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user);
 
         // Create a fake non-PDF file
@@ -122,7 +126,7 @@ startxref
     public function user_cannot_upload_pdf_larger_than_10mb(): void
     {
         // Authenticate the user
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user);
 
         // Create a fake PDF file larger than 10MB

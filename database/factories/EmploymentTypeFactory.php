@@ -1,0 +1,31 @@
+<?php
+
+namespace Database\Factories;
+
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\EmploymentType>
+ */
+class EmploymentTypeFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            'name' => $this->faker->randomElement([
+                'Full-time',
+                'Part-time',
+                'Contract',
+                'Internship',
+                'Voluntary',
+                'Freelance',
+                'Self-employed',
+            ]),
+        ];
+    }
+}

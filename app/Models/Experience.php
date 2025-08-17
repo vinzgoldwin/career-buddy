@@ -25,7 +25,7 @@ class Experience extends Model
         'start_date',
         'end_date',
         'currently_working',
-        'employment_type',
+        'employment_type_id',
         'industry',
     ];
 
@@ -46,5 +46,13 @@ class Experience extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the employment type for the experience.
+     */
+    public function employmentType(): BelongsTo
+    {
+        return $this->belongsTo(EmploymentType::class);
     }
 }
