@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Log;
 
 class AiResumeBuilderController extends Controller
 {
@@ -33,8 +34,12 @@ class AiResumeBuilderController extends Controller
         // Load user's related data
         $user->load(['education', 'experiences', 'licensesAndCertifications', 'projects', 'skills']);
 
-        // Get all employment types
-        $employmentTypes = EmploymentType::all();
+        // Get all employment types, handle case where table doesn't exist
+        try {
+            $employmentTypes = EmploymentType::all();
+        } catch (\Exception $e) {
+            $employmentTypes = collect(); // Return empty collection if table doesn't exist
+        }
 
         return Inertia::render('ai/AiResumeBuilder', [
             'employmentTypes' => $employmentTypes,
@@ -233,7 +238,7 @@ class AiResumeBuilderController extends Controller
     /**
      * Handle PDF resume upload and extract text.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function uploadResume(Request $request)
     {
@@ -243,39 +248,69 @@ class AiResumeBuilderController extends Controller
             'resume' => 'required|file|mimes:pdf|max:10240', // Max 10MB
         ]);
 
-        $path = $request->file('resume')->getRealPath();
-        $text = $this->pdfToTextService->extract($path);
+        try {
+            $path = $request->file('resume')->getRealPath();
+            $text = $this->pdfToTextService->extract($path);
 
-        // Process the extracted text with our resume parsing service
-        $resumeParsingService = new ResumeParsingService();
-        $response = $resumeParsingService->extractResumeInformation($text);
+            // Process the extracted text with our resume parsing service
+            $resumeParsingService = new ResumeParsingService;
+            $response = $resumeParsingService->extractResumeInformation($text);
 
-        // Extract JSON from the response
-        $content = $response['choices'][0]['message']['content'] ?? '';
+            // Extract JSON from the response
+            $content = $response['choices'][0]['message']['content'] ?? '';
 
-        // Extract content between <structured_json> tags
-        if (preg_match('/<structured_json>(.*?)<\/structured_json>/s', $content, $matches)) {
-            $jsonString = $matches[1];
-            // Clean up the JSON string
-            $jsonString = trim($jsonString);
-            try {
-                $structuredData = json_decode($jsonString, true);
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    return response()->json([
-                        'text' => $text,
-                        'structured_data' => $structuredData,
-                    ]);
+            // Log the raw response for debugging
+            Log::info('AI Resume Parsing Response', ['content' => $content]);
+
+            // Extract content between <structured_json> tags
+            if (preg_match('/<structured_json>(.*?)<\/structured_json>/s', $content, $matches)) {
+                $jsonString = $matches[1];
+                // Clean up the JSON string
+                $jsonString = trim($jsonString);
+                Log::info('Extracted JSON String', ['jsonString' => $jsonString]);
+
+                try {
+                    $structuredData = json_decode($jsonString, true);
+                    Log::info('Parsed Structured Data', ['structuredData' => $structuredData]);
+
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        // Get all employment types, handle case where table doesn't exist
+                        try {
+                            $employmentTypes = EmploymentType::all();
+                        } catch (\Exception $e) {
+                            $employmentTypes = collect(); // Return empty collection if table doesn't exist
+                        }
+
+                        return Inertia::render('ai/AiResumeBuilder', [
+                            'employmentTypes' => $employmentTypes,
+                            'aiParsedData' => $structuredData,
+                            'prefillData' => [
+                                'name' => Auth::user()->name,
+                                'location' => Auth::user()->location,
+                                'email' => Auth::user()->email,
+                                'website' => Auth::user()->website,
+                                'summary' => Auth::user()->summary,
+                                'educations' => [],
+                                'experiences' => [],
+                                'licenses_and_certifications' => [],
+                                'projects' => [],
+                                'skills' => [],
+                            ],
+                        ]);
+                    } else {
+                        Log::error('JSON Parse Error', ['error' => json_last_error_msg()]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Exception during JSON parsing', ['exception' => $e->getMessage()]);
                 }
-            } catch (\Exception $e) {
-                // Handle JSON parsing error
             }
-        }
 
-        // Return the extracted text and raw AI response if JSON parsing fails
-        return response()->json([
-            'text' => $text,
-            'raw_response' => $content,
-        ]);
+            return redirect()->back()->with('error', 'Failed to parse resume data. Please try again.');
+        } catch (\Exception $e) {
+            Log::error('Exception during resume upload processing', ['exception' => $e->getMessage()]);
+
+            return redirect()->back()->with('error', 'An error occurred while processing your resume. Please try again.');
+        }
     }
 
     /**

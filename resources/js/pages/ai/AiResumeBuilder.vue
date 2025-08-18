@@ -5,8 +5,8 @@ import { Head, usePage, router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FileText, Upload, Sparkles, Plus, Trash2 } from 'lucide-vue-next';
-import { ref, reactive } from 'vue';
+import { FileText, Upload, Plus, Trash2, Sparkles } from 'lucide-vue-next';
+import { ref, reactive, watch, onMounted } from 'vue';
 import FullscreenDialog from '@/components/FullscreenDialog.vue';
 import FileUploadDialog from '@/components/FileUploadDialog.vue';
 
@@ -70,6 +70,51 @@ interface PrefillData {
   skills: Skill[];
 }
 
+// Define the structure of the AI parsed data
+interface AiParsedData {
+  name: string;
+  location: string;
+  description: string;
+  headline: string;
+  languages: string[];
+  educations: Array<{
+    start_date: string;
+    end_date: string;
+    school: string;
+    degree: string;
+    description: string;
+    grade: string;
+    field_of_study: string;
+  }>;
+  experiences: Array<{
+    start_date: string;
+    end_date: string | null;
+    company: string;
+    title: string;
+    description: string;
+    location: string;
+    currently_working: boolean;
+    employment_type: string;
+  }>;
+  skills: string[];
+  license_and_certifications: Array<{
+    name: string;
+    issuing_organization: string;
+    issue_date: string;
+    expiration_date: string;
+    credential_id: string;
+    credential_url: string;
+  }>;
+  projects: Array<{
+    name: string;
+    description: string;
+    start_date: string;
+    end_date: string | null;
+    url: string | null;
+    skills_used: string[];
+  }>;
+}
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'AI Resume Builder',
@@ -109,7 +154,7 @@ const formData = reactive({
         start_date: '',
         end_date: '',
         currently_working: false,
-        employment_type: '',
+        employment_type_id: null,
         industry: '',
         description: ''
       }],
@@ -145,6 +190,100 @@ const formData = reactive({
 const isDialogOpen = ref(false);
 const isUploadDialogOpen = ref(false);
 
+// Check for AI parsed data in page props on component mount
+onMounted(() => {
+  console.log('Page props on mount:', page.props);
+  const aiParsedData = page.props.aiParsedData;
+  if (aiParsedData) {
+    console.log('AI Parsed Data found on mount:', aiParsedData);
+    populateFormWithAiData(aiParsedData);
+    isDialogOpen.value = true;
+  }
+});
+
+// Watch for changes in page props to auto-open dialog with AI parsed data
+watch(() => page.props, (newProps) => {
+  console.log('Page props changed:', newProps);
+  if (newProps.aiParsedData) {
+    console.log('AI Parsed Data found in watch:', newProps.aiParsedData);
+    populateFormWithAiData(newProps.aiParsedData);
+    isDialogOpen.value = true;
+  }
+}, { deep: true });
+
+// Function to populate form with AI parsed data
+const populateFormWithAiData = (aiData: any) => {
+  console.log('Populating form with AI data:', aiData);
+
+  // Populate basic info
+  if (aiData.name) formData.name = aiData.name;
+  if (aiData.location) formData.location = aiData.location;
+  if (aiData.description) formData.summary = aiData.description;
+
+  // Populate educations
+  if (aiData.educations && aiData.educations.length > 0) {
+    formData.educations = aiData.educations.map((edu: any) => ({
+      school: edu.school || '',
+      degree: edu.degree || '',
+      field_of_study: edu.field_of_study || '',
+      start_date: edu.start_date || '',
+      end_date: edu.end_date || '',
+      currently_studying: !edu.end_date,
+      grade: edu.grade || '',
+      activities: edu.description || ''
+    }));
+  }
+
+  // Populate experiences
+  if (aiData.experiences && aiData.experiences.length > 0) {
+    formData.experiences = aiData.experiences.map((exp: any) => ({
+      title: exp.title || '',
+      company: exp.company || '',
+      location: exp.location || '',
+      start_date: exp.start_date || '',
+      end_date: exp.end_date || '',
+      currently_working: exp.currently_working || false,
+      employment_type_id: null, // This would need to be mapped from employment_type string
+      industry: '',
+      description: exp.description || ''
+    }));
+  }
+
+  // Populate licenses and certifications
+  if (aiData.license_and_certifications && aiData.license_and_certifications.length > 0) {
+    formData.licenses_and_certifications = aiData.license_and_certifications.map((license: any) => ({
+      name: license.name || '',
+      issuing_organization: license.issuing_organization || '',
+      issue_date: license.issue_date || '',
+      expiration_date: license.expiration_date || '',
+      credential_id: license.credential_id || '',
+      credential_url: license.credential_url || ''
+    }));
+  }
+
+  // Populate projects
+  if (aiData.projects && aiData.projects.length > 0) {
+    formData.projects = aiData.projects.map((project: any) => ({
+      name: project.name || '',
+      description: project.description || '',
+      start_date: project.start_date || '',
+      end_date: project.end_date || '',
+      url: project.url || '',
+      skills_used: Array.isArray(project.skills_used) ? project.skills_used.join(', ') : (project.skills_used || '')
+    }));
+  }
+
+  // Populate skills
+  if (aiData.skills && aiData.skills.length > 0) {
+    formData.skills = aiData.skills.map((skill: string) => ({
+      name: skill,
+      proficiency_level: 3 // Default proficiency level
+    }));
+  }
+
+  console.log('Form data after population:', formData);
+};
+
 // Add new item to array
 const addEducation = () => {
   formData.educations.push({
@@ -167,7 +306,7 @@ const addExperience = () => {
     start_date: '',
     end_date: '',
     currently_working: false,
-    employment_type: '',
+    employment_type_id: null,
     industry: '',
     description: ''
   });
@@ -237,7 +376,7 @@ const removeSkill = (index: number) => {
 const submitForm = () => {
   console.log('Form submitted:', formData);
   // Send the data to the backend
-  (router as any).post((window as any).route('ai-resume-builder.store'), formData, {
+  router.post(route('ai-resume-builder.store'), formData, {
     onSuccess: () => {
       isDialogOpen.value = false;
     },
@@ -250,22 +389,21 @@ const submitForm = () => {
 // Handle file selection from upload dialog
 const handleFileSelected = (file: File) => {
   isUploadDialogOpen.value = false;
-  
+
   // Create FormData object
-  const formData = new FormData();
-  formData.append('resume', file);
-  
-  // Send the file to the backend
-  (router as any).post((window as any).route('ai-resume-builder.upload'), formData, {
+  const formDataObj = new FormData();
+  formDataObj.append('resume', file);
+
+  router.post(route('ai-resume-builder.upload'), formDataObj, {
     onSuccess: (response: any) => {
       console.log('File uploaded successfully:', response);
-      // You can continue from here with the extracted text
     },
     onError: (errors: any) => {
       console.log('Upload errors:', errors);
     }
   });
 };
+
 </script>
 
 <template>
@@ -294,6 +432,8 @@ const handleFileSelected = (file: File) => {
                         <FileText class="h-5 w-5" />
                         Resume Builder
                     </Button>
+
+                    
                 </div>
 
                 <!-- Beautiful View of User's Information -->
@@ -372,8 +512,8 @@ const handleFileSelected = (file: File) => {
                 </div>
 
                 <!-- Full-screen Dialog for entering details -->
-                <FullscreenDialog 
-                  :open="isDialogOpen" 
+                <FullscreenDialog
+                  :open="isDialogOpen"
                   title="Enter Your Professional Details"
                   description="Fill in your details below. All fields except name and email are optional."
                   @close="isDialogOpen = false"
@@ -533,16 +673,23 @@ const handleFileSelected = (file: File) => {
                                                   :id="'employment-type-' + index"
                                                   v-model="experience.employment_type_id"
                                                   class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                                  v-if="$page.props.employmentTypes && $page.props.employmentTypes.length > 0"
                                               >
                                                   <option value="">Select Employment Type</option>
-                                                  <option 
-                                                      v-for="employmentType in $page.props.employmentTypes" 
-                                                      :key="employmentType.id" 
+                                                  <option
+                                                      v-for="employmentType in $page.props.employmentTypes"
+                                                      :key="employmentType.id"
                                                       :value="employmentType.id"
                                                   >
                                                       {{ employmentType.name }}
                                                   </option>
                                               </select>
+                                              <Input
+                                                v-else
+                                                :id="'employment-type-' + index"
+                                                v-model="experience.employment_type"
+                                                placeholder="Full-time, Part-time, etc."
+                                              />
                                           </div>
 
                                           <div class="space-y-2">
@@ -758,7 +905,7 @@ const handleFileSelected = (file: File) => {
                                   </div>
                               </div>
                           </form>
-                          
+
                           <template #footer>
                             <Button type="button" variant="outline" @click="isDialogOpen = false">
                                 Cancel
@@ -769,10 +916,10 @@ const handleFileSelected = (file: File) => {
                             </Button>
                           </template>
                 </FullscreenDialog>
-                
+
                 <!-- File Upload Dialog -->
-                <FileUploadDialog 
-                  :open="isUploadDialogOpen" 
+                <FileUploadDialog
+                  :open="isUploadDialogOpen"
                   @update:open="isUploadDialogOpen = $event"
                   @file-selected="handleFileSelected"
                 />
