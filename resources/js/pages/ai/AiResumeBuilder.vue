@@ -528,19 +528,13 @@ onUnmounted(() => {
                         Upload Resume
                     </Button>
 
-                    <!-- Resume Builder Button (opens existing dialog) -->
-                    <Button class="flex items-center gap-2 w-fit" @click="isDialogOpen = true">
-                        <FileText class="h-5 w-5" />
-                        Resume Builder
-                    </Button>
-
                     <!-- Open full editor page (non-modal) -->
-                    <Button variant="outline" class="flex items-center gap-2 w-fit" @click="router.visit(route('ai-resume-builder.editor'))">
+                    <Button class="flex items-center gap-2 w-fit" @click="router.visit(route('ai-resume-builder.editor'))">
                         <FileText class="h-5 w-5" />
                         Open Full Editor
                     </Button>
 
-                    
+
                 </div>
 
                 <!-- Beautiful View of User's Information -->
