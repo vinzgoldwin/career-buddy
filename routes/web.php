@@ -7,6 +7,7 @@ use App\Http\Controllers\Ai\InterviewQuestionBankController;
 use App\Http\Controllers\Ai\MockInterviewController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\PdfController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -14,9 +15,16 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
+Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('home');
+    }
+    return Inertia::render('Welcome');
+})->name('welcome');
+
 Route::get('/home', function () {
     return Inertia::render('Home');
-})->middleware(['auth', 'verified'])->name('home.auth');
+})->middleware(['auth', 'verified'])->name('home');
 
 Route::get('ai-resume-builder', [AiResumeBuilderController::class, 'index'])
     ->middleware(['auth', 'verified'])
