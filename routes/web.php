@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\Ai\AiAutoApplyController;
 use App\Http\Controllers\Ai\AiResumeBuilderController;
 use App\Http\Controllers\Ai\InterviewQuestionBankController;
 use App\Http\Controllers\Ai\MockInterviewController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\PdfController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -40,6 +42,14 @@ Route::get('interview-question-bank', [InterviewQuestionBankController::class, '
 Route::get('ai-auto-apply', [AiAutoApplyController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('ai-auto-apply');
+
+Route::get('billing', [BillingController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('billing');
+
+Route::get('affiliate', [AffiliateController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('affiliate');
 
 Route::post('ai-resume-builder/upload', [AiResumeBuilderController::class, 'uploadResume'])
     ->middleware(['auth', 'verified'])

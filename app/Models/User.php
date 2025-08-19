@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -89,5 +90,45 @@ class User extends Authenticatable
     public function licensesAndCertifications(): HasMany
     {
         return $this->hasMany(LicenseAndCertification::class);
+    }
+
+    /**
+     * Get the user's balance.
+     */
+    public function balance(): HasOne
+    {
+        return $this->hasOne(UserBalance::class);
+    }
+
+    /**
+     * Get the user's transactions.
+     */
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * Get the user's affiliate code.
+     */
+    public function affiliateCode(): HasOne
+    {
+        return $this->hasOne(AffiliateCode::class);
+    }
+
+    /**
+     * Get referrals made by this user.
+     */
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(Referral::class, 'referrer_id');
+    }
+
+    /**
+     * Get the referral that brought this user.
+     */
+    public function referredBy(): HasOne
+    {
+        return $this->hasOne(Referral::class, 'referred_user_id');
     }
 }
