@@ -495,7 +495,7 @@ onUnmounted(() => {
         <div class="flex h-full flex-1 flex-col gap-6 rounded-xl p-4 md:p-6 overflow-x-auto">
             <!-- Upload Processing Overlay -->
             <div v-if="isProcessing" class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-                <div class="w-full max-w-md rounded-xl border bg-card p-6 shadow-lg ring-1 ring-black/5">
+                <div class="w-full max-w-md rounded-xl border bg-card-gradient p-6 shadow-lg ring-1 ring-black/5">
                     <div class="flex items-center gap-3 mb-3">
                         <Loader2 class="h-5 w-5 text-primary animate-spin" />
                         <h3 class="text-lg font-semibold">Processing Resume</h3>
@@ -523,22 +523,20 @@ onUnmounted(() => {
             <div class="flex flex-col gap-6">
                 <div class="flex flex-col sm:flex-row gap-4">
                     <!-- Upload Resume Button -->
-                    <Button variant="outline" class="flex items-center gap-2 w-fit" @click="isUploadDialogOpen = true">
+                    <Button variant="ghost" class="flex items-center gap-2 w-fit bg-secondary-gradient text-white hover:opacity-90" @click="isUploadDialogOpen = true">
                         <Upload class="h-5 w-5" />
                         Upload Resume
                     </Button>
 
                     <!-- Open full editor page (non-modal) -->
-                    <Button class="flex items-center gap-2 w-fit" @click="router.visit(route('ai-resume-builder.editor'))">
+                    <Button variant="ghost" class="flex items-center gap-2 w-fit bg-primary-gradient text-white hover:opacity-90" @click="router.visit(route('ai-resume-builder.editor'))">
                         <FileText class="h-5 w-5" />
                             Resume Editor
                     </Button>
-
-
                 </div>
 
                 <!-- Beautiful View of User's Information -->
-                <div class="relative rounded-xl p-6 bg-card/60 border shadow-sm ring-1 ring-black/5">
+                <div class="relative rounded-xl p-6 bg-card-gradient border shadow-sm ring-1 ring-black/5">
                     <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-purple-500/60 to-pink-500/60 rounded-t-xl" />
                     <div class="space-y-8">
                         <!-- Personal Information Preview -->
@@ -548,25 +546,25 @@ onUnmounted(() => {
                                 <UserIcon class="h-5 w-5 text-primary" />
                             </h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="rounded-lg border bg-background/50 p-3">
+                                <div class="rounded-lg border bg-card-gradient p-3">
                                     <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
                                         <UserIcon class="h-4 w-4" /> Full Name
                                     </p>
                                     <p class="font-medium mt-1">{{ formData.name || 'Not provided' }}</p>
                                 </div>
-                                <div class="rounded-lg border bg-background/50 p-3">
+                                <div class="rounded-lg border bg-card-gradient p-3">
                                     <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
                                         <MapPin class="h-4 w-4" /> Location
                                     </p>
                                     <p class="font-medium mt-1">{{ formData.location || 'Not provided' }}</p>
                                 </div>
-                                <div class="rounded-lg border bg-background/50 p-3">
+                                <div class="rounded-lg border bg-card-gradient p-3">
                                     <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
                                         <Mail class="h-4 w-4" /> Email
                                     </p>
                                     <p class="font-medium mt-1">{{ formData.email || 'Not provided' }}</p>
                                 </div>
-                                <div class="rounded-lg border bg-background/50 p-3">
+                                <div class="rounded-lg border bg-card-gradient p-3">
                                     <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
                                         <Globe class="h-4 w-4" /> Website
                                     </p>
@@ -581,7 +579,7 @@ onUnmounted(() => {
                                 <span>Professional Summary</span>
                                 <FileText class="h-5 w-5 text-primary" />
                             </h2>
-                            <p class="font-medium leading-relaxed bg-background/50 border rounded-lg p-4">{{ formData.summary || 'Not provided' }}</p>
+                            <p class="font-medium leading-relaxed bg-card-gradient border rounded-lg p-4">{{ formData.summary || 'Not provided' }}</p>
                         </div>
 
                         <!-- Education Preview -->
@@ -594,7 +592,7 @@ onUnmounted(() => {
                                 <div
                                   v-for="(education, index) in formData.educations"
                                   :key="index"
-                                  class="rounded-lg border bg-background/50 p-4 pl-5 relative"
+                                  class="rounded-lg border bg-card-gradient p-4 pl-5 relative"
                                 >
                                     <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-primary/40" />
                                     <h3 class="font-semibold">{{ education.school || 'School not provided' }}</h3>
@@ -621,7 +619,7 @@ onUnmounted(() => {
                                 <div
                                   v-for="(experience, index) in formData.experiences"
                                   :key="index"
-                                  class="rounded-lg border bg-background/50 p-4 pl-5 relative"
+                                  class="rounded-lg border bg-card-gradient p-4 pl-5 relative"
                                 >
                                     <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-purple-500/30" />
                                     <h3 class="font-semibold">{{ experience.title || 'Position not provided' }}</h3>
@@ -648,7 +646,7 @@ onUnmounted(() => {
                                 <div
                                   v-for="(project, index) in formData.projects"
                                   :key="index"
-                                  class="rounded-lg border bg-background/50 p-4 pl-5 relative"
+                                  class="rounded-lg border bg-card-gradient p-4 pl-5 relative"
                                 >
                                     <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-blue-500/30" />
                                     <h3 class="font-semibold">{{ project.name || 'Project not provided' }}</h3>
@@ -678,7 +676,7 @@ onUnmounted(() => {
                                 <div
                                   v-for="(license, index) in formData.licenses_and_certifications"
                                   :key="index"
-                                  class="rounded-lg border bg-background/50 p-4 pl-5 relative"
+                                  class="rounded-lg border bg-card-gradient p-4 pl-5 relative"
                                 >
                                     <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-emerald-500/30" />
                                     <h3 class="font-semibold">{{ license.name || 'Certification' }}</h3>
@@ -728,6 +726,7 @@ onUnmounted(() => {
                   title="Enter Your Professional Details"
                   description="Fill in your details below. All fields except name and email are optional."
                   @close="isDialogOpen = false"
+                  class="bg-card-gradient"
                 >
                   <form @submit.prevent="submitForm" class="space-y-8">
                               <!-- Personal Information -->
@@ -773,7 +772,7 @@ onUnmounted(() => {
                                       </Button>
                                   </div>
 
-                                  <div v-for="(education, index) in formData.educations" :key="index" class="border rounded-lg p-4 space-y-4">
+                                  <div v-for="(education, index) in formData.educations" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
                                       <div class="flex justify-between items-start">
                                           <h4 class="font-medium">Education #{{ index + 1 }}</h4>
                                           <Button
@@ -848,7 +847,7 @@ onUnmounted(() => {
                                       </Button>
                                   </div>
 
-                                  <div v-for="(experience, index) in formData.experiences" :key="index" class="border rounded-lg p-4 space-y-4">
+                                  <div v-for="(experience, index) in formData.experiences" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
                                       <div class="flex justify-between items-start">
                                           <h4 class="font-medium">Experience #{{ index + 1 }}</h4>
                                           <Button
@@ -953,7 +952,7 @@ onUnmounted(() => {
                                       </Button>
                                   </div>
 
-                                  <div v-for="(license, index) in formData.licenses_and_certifications" :key="index" class="border rounded-lg p-4 space-y-4">
+                                  <div v-for="(license, index) in formData.licenses_and_certifications" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
                                       <div class="flex justify-between items-start">
                                           <h4 class="font-medium">License/Certification #{{ index + 1 }}</h4>
                                           <Button
@@ -1011,7 +1010,7 @@ onUnmounted(() => {
                                       </Button>
                                   </div>
 
-                                  <div v-for="(project, index) in formData.projects" :key="index" class="border rounded-lg p-4 space-y-4">
+                                  <div v-for="(project, index) in formData.projects" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
                                       <div class="flex justify-between items-start">
                                           <h4 class="font-medium">Project #{{ index + 1 }}</h4>
                                           <Button
@@ -1074,7 +1073,7 @@ onUnmounted(() => {
                                       </Button>
                                   </div>
 
-                                  <div v-for="(skill, index) in formData.skills" :key="index" class="border rounded-lg p-4 space-y-4">
+                                  <div v-for="(skill, index) in formData.skills" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
                                       <div class="flex justify-between items-start">
                                           <h4 class="font-medium">Skill #{{ index + 1 }}</h4>
                                           <Button
@@ -1121,7 +1120,7 @@ onUnmounted(() => {
                             <Button type="button" variant="outline" @click="isDialogOpen = false">
                                 Cancel
                             </Button>
-                            <Button type="button" @click="submitForm">
+                            <Button type="button" variant="ghost" class="bg-primary-gradient text-white hover:opacity-90" @click="submitForm">
                                 <Sparkles class="mr-2 h-4 w-4" />
                                 Create AI-Powered Resume
                             </Button>

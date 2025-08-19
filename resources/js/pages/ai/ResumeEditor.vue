@@ -192,13 +192,13 @@ const submitForm = () => {
     <div class="px-4 md:px-6 lg:px-8 py-6">
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold tracking-tight">Resume Editor</h1>
-        <Button @click="submitForm">Save</Button>
+        <Button variant="ghost" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white" @click="submitForm">Save</Button>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <!-- Sidebar outline -->
         <aside class="hidden lg:block lg:col-span-3">
-          <div class="sticky top-20 space-y-1 rounded-xl border bg-card p-3">
+          <div class="sticky top-20 space-y-1 rounded-xl border bg-card-gradient p-3">
             <div v-for="s in sections" :key="s.id">
               <a :href="`#${s.id}`" class="flex items-center justify-between rounded-md px-3 py-2 hover:bg-muted">
                 <span class="text-sm font-medium">{{ s.label }}</span>
@@ -215,7 +215,7 @@ const submitForm = () => {
         <!-- Main editor -->
         <section class="lg:col-span-9 space-y-4">
           <!-- Personal -->
-          <div id="personal" class="scroll-mt-24 rounded-xl border bg-card p-4">
+          <div id="personal" class="scroll-mt-24 rounded-xl border bg-card-gradient p-4">
             <h2 class="text-lg font-semibold flex items-center gap-2">
               <span>Personal</span>
               <UserIcon class="h-5 w-5 text-primary" />
@@ -224,63 +224,63 @@ const submitForm = () => {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-2">
                 <Label for="name">Full Name</Label>
-                <Input id="name" v-model="formData.name" placeholder="Your full name" />
+                <Input id="name" v-model="formData.name" placeholder="Your full name" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" />
               </div>
               <div class="space-y-2">
                 <Label for="location">Location</Label>
-                <Input id="location" v-model="formData.location" placeholder="City, Country" />
+                <Input id="location" v-model="formData.location" placeholder="City, Country" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" />
               </div>
               <div class="space-y-2">
                 <Label for="email">Email</Label>
-                <Input id="email" v-model="formData.email" type="email" placeholder="you@example.com" />
+                <Input id="email" v-model="formData.email" type="email" placeholder="you@example.com" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" />
               </div>
               <div class="space-y-2">
                 <Label for="website">Website</Label>
-                <Input id="website" v-model="formData.website" placeholder="https://yourwebsite.com" />
+                <Input id="website" v-model="formData.website" placeholder="https://yourwebsite.com" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" />
               </div>
             </div>
           </div>
 
           <!-- Summary -->
-          <div id="summary" class="scroll-mt-24 rounded-xl border bg-card p-4">
+          <div id="summary" class="scroll-mt-24 rounded-xl border bg-card-gradient p-4">
             <h2 class="text-lg font-semibold flex items-center gap-2">
               <span>Summary</span>
               <LinkIcon class="h-5 w-5 text-primary rotate-90" />
             </h2>
             <Separator class="my-3" />
-            <textarea v-model="formData.summary" class="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="A brief overview of your professional background, key skills, and career goals..." />
+            <textarea v-model="formData.summary" class="flex min-h-[120px] w-full rounded-md border-2 border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary" placeholder="A brief overview of your professional background, key skills, and career goals..." />
           </div>
 
           <!-- Education -->
-          <div id="education" class="scroll-mt-24 rounded-xl border bg-card p-4">
+          <div id="education" class="scroll-mt-24 rounded-xl border bg-card-gradient p-4">
             <div class="flex items-center justify-between">
               <h2 class="text-lg font-semibold flex items-center gap-2">
                 <span>Education</span>
                 <GraduationCap class="h-5 w-5 text-primary" />
               </h2>
-              <Button variant="outline" size="sm" @click="addEducation">Add</Button>
+              <Button variant="ghost" size="sm" class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white" @click="addEducation">Add</Button>
             </div>
             <Separator class="my-3" />
             <div class="space-y-3">
               <div v-if="formData.educations.length === 0" class="text-center py-4 text-muted-foreground">
                 No education entries added yet. Click "Add" to add your first education.
               </div>
-              <Collapsible v-for="(education, i) in formData.educations" :key="i" class="rounded-lg border">
+              <Collapsible v-for="(education, i) in formData.educations" :key="i" class="rounded-lg border bg-card-gradient">
                 <CollapsibleTrigger class="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted">
                   <div class="text-sm font-medium truncate">{{ education.school || 'Education #' + (i+1) }}</div>
                   <ChevronDown class="h-4 w-4 ml-2" />
                 </CollapsibleTrigger>
                 <CollapsibleContent class="px-3 py-3 border-t space-y-3">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div class="space-y-1"><Label :for="'school-'+i">School</Label><Input :id="'school-'+i" v-model="education.school" placeholder="University Name" /></div>
-                    <div class="space-y-1"><Label :for="'degree-'+i">Degree</Label><Input :id="'degree-'+i" v-model="education.degree" placeholder="Bachelor's, Master's, etc." /></div>
-                    <div class="space-y-1 md:col-span-2"><Label :for="'fos-'+i">Field of Study</Label><Input :id="'fos-'+i" v-model="education.field_of_study" placeholder="Computer Science, Business, etc." /></div>
-                    <div class="space-y-1"><Label :for="'start-'+i">Start (MM/YYYY)</Label><Input :id="'start-'+i" v-model="education.start_date" placeholder="MM/YYYY" /></div>
-                    <div class="space-y-1"><Label :for="'end-'+i">End (MM/YYYY)</Label><Input :id="'end-'+i" v-model="education.end_date" placeholder="MM/YYYY" :disabled="education.currently_studying" /></div>
-                    <div class="space-y-1 md:col-span-2"><Label :for="'activities-'+i">Activities</Label><Input :id="'activities-'+i" v-model="education.activities" placeholder="Student organizations, clubs, etc." /></div>
+                    <div class="space-y-1"><Label :for="'school-'+i">School</Label><Input :id="'school-'+i" v-model="education.school" placeholder="University Name" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'degree-'+i">Degree</Label><Input :id="'degree-'+i" v-model="education.degree" placeholder="Bachelor's, Master's, etc." class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1 md:col-span-2"><Label :for="'fos-'+i">Field of Study</Label><Input :id="'fos-'+i" v-model="education.field_of_study" placeholder="Computer Science, Business, etc." class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'start-'+i">Start (MM/YYYY)</Label><Input :id="'start-'+i" v-model="education.start_date" placeholder="MM/YYYY" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'end-'+i">End (MM/YYYY)</Label><Input :id="'end-'+i" v-model="education.end_date" placeholder="MM/YYYY" :disabled="education.currently_studying" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1 md:col-span-2"><Label :for="'activities-'+i">Activities</Label><Input :id="'activities-'+i" v-model="education.activities" placeholder="Student organizations, clubs, etc." class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
                   </div>
                   <div class="flex justify-end">
-                    <Button variant="ghost" size="sm" @click="removeEducation(i)">Remove</Button>
+                    <Button variant="ghost" size="sm" class="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white" @click="removeEducation(i)">Remove</Button>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -288,35 +288,35 @@ const submitForm = () => {
           </div>
 
           <!-- Experience -->
-          <div id="experience" class="scroll-mt-24 rounded-xl border bg-card p-4">
+          <div id="experience" class="scroll-mt-24 rounded-xl border bg-card-gradient p-4">
             <div class="flex items-center justify-between">
               <h2 class="text-lg font-semibold flex items-center gap-2">
                 <span>Experience</span>
                 <Briefcase class="h-5 w-5 text-primary" />
               </h2>
-              <Button variant="outline" size="sm" @click="addExperience">Add</Button>
+              <Button variant="ghost" size="sm" class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white" @click="addExperience">Add</Button>
             </div>
             <Separator class="my-3" />
             <div class="space-y-3">
               <div v-if="formData.experiences.length === 0" class="text-center py-4 text-muted-foreground">
                 No experience entries added yet. Click "Add" to add your first experience.
               </div>
-              <Collapsible v-for="(experience, i) in formData.experiences" :key="i" class="rounded-lg border">
+              <Collapsible v-for="(experience, i) in formData.experiences" :key="i" class="rounded-lg border bg-card-gradient">
                 <CollapsibleTrigger class="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted">
                   <div class="text-sm font-medium truncate">{{ experience.title || 'Experience #' + (i+1) }}</div>
                   <ChevronDown class="h-4 w-4 ml-2" />
                 </CollapsibleTrigger>
                 <CollapsibleContent class="px-3 py-3 border-t space-y-3">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div class="space-y-1"><Label :for="'title-'+i">Title</Label><Input :id="'title-'+i" v-model="experience.title" placeholder="Software Engineer" /></div>
-                    <div class="space-y-1"><Label :for="'company-'+i">Company</Label><Input :id="'company-'+i" v-model="experience.company" placeholder="Company Name" /></div>
-                    <div class="space-y-1"><Label :for="'location-'+i">Location</Label><Input :id="'location-'+i" v-model="experience.location" placeholder="City, Country" /></div>
-                    <div class="space-y-1"><Label :for="'start-exp-'+i">Start (MM/YYYY)</Label><Input :id="'start-exp-'+i" v-model="experience.start_date" placeholder="MM/YYYY" /></div>
-                    <div class="space-y-1"><Label :for="'end-exp-'+i">End (MM/YYYY)</Label><Input :id="'end-exp-'+i" v-model="experience.end_date" placeholder="MM/YYYY" :disabled="experience.currently_working" /></div>
-                    <div class="space-y-1 md:col-span-2"><Label :for="'desc-'+i">Description</Label><textarea :id="'desc-'+i" v-model="experience.description" class="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Describe your responsibilities and achievements..." /></div>
+                    <div class="space-y-1"><Label :for="'title-'+i">Title</Label><Input :id="'title-'+i" v-model="experience.title" placeholder="Software Engineer" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'company-'+i">Company</Label><Input :id="'company-'+i" v-model="experience.company" placeholder="Company Name" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'location-'+i">Location</Label><Input :id="'location-'+i" v-model="experience.location" placeholder="City, Country" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'start-exp-'+i">Start (MM/YYYY)</Label><Input :id="'start-exp-'+i" v-model="experience.start_date" placeholder="MM/YYYY" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'end-exp-'+i">End (MM/YYYY)</Label><Input :id="'end-exp-'+i" v-model="experience.end_date" placeholder="MM/YYYY" :disabled="experience.currently_working" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1 md:col-span-2"><Label :for="'desc-'+i">Description</Label><textarea :id="'desc-'+i" v-model="experience.description" class="flex min-h-[100px] w-full rounded-md border-2 border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary" placeholder="Describe your responsibilities and achievements..." /></div>
                   </div>
                   <div class="flex justify-end">
-                    <Button variant="ghost" size="sm" @click="removeExperience(i)">Remove</Button>
+                    <Button variant="ghost" size="sm" class="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white" @click="removeExperience(i)">Remove</Button>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -324,35 +324,35 @@ const submitForm = () => {
           </div>
 
           <!-- Projects -->
-          <div id="projects" class="scroll-mt-24 rounded-xl border bg-card p-4">
+          <div id="projects" class="scroll-mt-24 rounded-xl border bg-card-gradient p-4">
             <div class="flex items-center justify-between">
               <h2 class="text-lg font-semibold flex items-center gap-2">
                 <span>Projects</span>
                 <Folder class="h-5 w-5 text-primary" />
               </h2>
-              <Button variant="outline" size="sm" @click="addProject">Add</Button>
+              <Button variant="ghost" size="sm" class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white" @click="addProject">Add</Button>
             </div>
             <Separator class="my-3" />
             <div class="space-y-3">
               <div v-if="formData.projects.length === 0" class="text-center py-4 text-muted-foreground">
                 No project entries added yet. Click "Add" to add your first project.
               </div>
-              <Collapsible v-for="(project, i) in formData.projects" :key="i" class="rounded-lg border">
+              <Collapsible v-for="(project, i) in formData.projects" :key="i" class="rounded-lg border bg-card-gradient">
                 <CollapsibleTrigger class="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted">
                   <div class="text-sm font-medium truncate">{{ project.name || 'Project #' + (i+1) }}</div>
                   <ChevronDown class="h-4 w-4 ml-2" />
                 </CollapsibleTrigger>
                 <CollapsibleContent class="px-3 py-3 border-t space-y-3">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div class="space-y-1"><Label :for="'pname-'+i">Name</Label><Input :id="'pname-'+i" v-model="project.name" placeholder="Project Title" /></div>
-                    <div class="space-y-1"><Label :for="'purl-'+i">URL</Label><Input :id="'purl-'+i" v-model="project.url" placeholder="https://example.com/project" /></div>
-                    <div class="space-y-1"><Label :for="'pstart-'+i">Start (MM/YYYY)</Label><Input :id="'pstart-'+i" v-model="project.start_date" placeholder="MM/YYYY" /></div>
-                    <div class="space-y-1"><Label :for="'pend-'+i">End (MM/YYYY)</Label><Input :id="'pend-'+i" v-model="project.end_date" placeholder="MM/YYYY" /></div>
-                    <div class="space-y-1 md:col-span-2"><Label :for="'pskills-'+i">Skills Used</Label><Input :id="'pskills-'+i" v-model="project.skills_used" placeholder="JavaScript, React, Node.js, etc." /></div>
-                    <div class="space-y-1 md:col-span-2"><Label :for="'pdesc-'+i">Description</Label><textarea :id="'pdesc-'+i" v-model="project.description" class="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Describe the project, your role, and key achievements..." /></div>
+                    <div class="space-y-1"><Label :for="'pname-'+i">Name</Label><Input :id="'pname-'+i" v-model="project.name" placeholder="Project Title" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'purl-'+i">URL</Label><Input :id="'purl-'+i" v-model="project.url" placeholder="https://example.com/project" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'pstart-'+i">Start (MM/YYYY)</Label><Input :id="'pstart-'+i" v-model="project.start_date" placeholder="MM/YYYY" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'pend-'+i">End (MM/YYYY)</Label><Input :id="'pend-'+i" v-model="project.end_date" placeholder="MM/YYYY" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1 md:col-span-2"><Label :for="'pskills-'+i">Skills Used</Label><Input :id="'pskills-'+i" v-model="project.skills_used" placeholder="JavaScript, React, Node.js, etc." class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1 md:col-span-2"><Label :for="'pdesc-'+i">Description</Label><textarea :id="'pdesc-'+i" v-model="project.description" class="flex min-h-[100px] w-full rounded-md border-2 border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary" placeholder="Describe the project, your role, and key achievements..." /></div>
                   </div>
                   <div class="flex justify-end">
-                    <Button variant="ghost" size="sm" @click="removeProject(i)">Remove</Button>
+                    <Button variant="ghost" size="sm" class="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white" @click="removeProject(i)">Remove</Button>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -360,35 +360,35 @@ const submitForm = () => {
           </div>
 
           <!-- Licenses -->
-          <div id="licenses" class="scroll-mt-24 rounded-xl border bg-card p-4">
+          <div id="licenses" class="scroll-mt-24 rounded-xl border bg-card-gradient p-4">
             <div class="flex items-center justify-between">
               <h2 class="text-lg font-semibold flex items-center gap-2">
                 <span>Licenses & Certifications</span>
                 <Award class="h-5 w-5 text-primary" />
               </h2>
-              <Button variant="outline" size="sm" @click="addLicense">Add</Button>
+              <Button variant="ghost" size="sm" class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white" @click="addLicense">Add</Button>
             </div>
             <Separator class="my-3" />
             <div class="space-y-3">
               <div v-if="formData.licenses_and_certifications.length === 0" class="text-center py-4 text-muted-foreground">
                 No license or certification entries added yet. Click "Add" to add your first license or certification.
               </div>
-              <Collapsible v-for="(license, i) in formData.licenses_and_certifications" :key="i" class="rounded-lg border">
+              <Collapsible v-for="(license, i) in formData.licenses_and_certifications" :key="i" class="rounded-lg border bg-card-gradient">
                 <CollapsibleTrigger class="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted">
                   <div class="text-sm font-medium truncate">{{ license.name || 'License/Certification #' + (i+1) }}</div>
                   <ChevronDown class="h-4 w-4 ml-2" />
                 </CollapsibleTrigger>
                 <CollapsibleContent class="px-3 py-3 border-t space-y-3">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div class="space-y-1"><Label :for="'lname-'+i">Name</Label><Input :id="'lname-'+i" v-model="license.name" placeholder="Certification Name" /></div>
-                    <div class="space-y-1"><Label :for="'lorg-'+i">Issuing Organization</Label><Input :id="'lorg-'+i" v-model="license.issuing_organization" placeholder="Organization Name" /></div>
-                    <div class="space-y-1"><Label :for="'lissue-'+i">Issue (MM/YYYY)</Label><Input :id="'lissue-'+i" v-model="license.issue_date" placeholder="MM/YYYY" /></div>
-                    <div class="space-y-1"><Label :for="'lexp-'+i">Expiration (MM/YYYY)</Label><Input :id="'lexp-'+i" v-model="license.expiration_date" placeholder="MM/YYYY" /></div>
-                    <div class="space-y-1"><Label :for="'lcredid-'+i">Credential ID</Label><Input :id="'lcredid-'+i" v-model="license.credential_id" placeholder="ID Number" /></div>
-                    <div class="space-y-1"><Label :for="'lcredurl-'+i">Credential URL</Label><Input :id="'lcredurl-'+i" v-model="license.credential_url" placeholder="https://example.com/credential" /></div>
+                    <div class="space-y-1"><Label :for="'lname-'+i">Name</Label><Input :id="'lname-'+i" v-model="license.name" placeholder="Certification Name" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'lorg-'+i">Issuing Organization</Label><Input :id="'lorg-'+i" v-model="license.issuing_organization" placeholder="Organization Name" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'lissue-'+i">Issue (MM/YYYY)</Label><Input :id="'lissue-'+i" v-model="license.issue_date" placeholder="MM/YYYY" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'lexp-'+i">Expiration (MM/YYYY)</Label><Input :id="'lexp-'+i" v-model="license.expiration_date" placeholder="MM/YYYY" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'lcredid-'+i">Credential ID</Label><Input :id="'lcredid-'+i" v-model="license.credential_id" placeholder="ID Number" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
+                    <div class="space-y-1"><Label :for="'lcredurl-'+i">Credential URL</Label><Input :id="'lcredurl-'+i" v-model="license.credential_url" placeholder="https://example.com/credential" class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" /></div>
                   </div>
                   <div class="flex justify-end">
-                    <Button variant="ghost" size="sm" @click="removeLicense(i)">Remove</Button>
+                    <Button variant="ghost" size="sm" class="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white" @click="removeLicense(i)">Remove</Button>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -396,43 +396,54 @@ const submitForm = () => {
           </div>
 
           <!-- Skills -->
-          <div id="skills" class="scroll-mt-24 rounded-xl border bg-card p-4">
+          <div id="skills" class="scroll-mt-24 rounded-xl border bg-card-gradient p-4">
             <div class="flex items-center justify-between">
               <h2 class="text-lg font-semibold flex items-center gap-2">
                 <span>Skills</span>
                 <ListChecks class="h-5 w-5 text-primary" />
               </h2>
-              <Button variant="outline" size="sm" @click="addSkill">Add</Button>
+              <Button variant="ghost" size="sm" class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white" @click="addSkill">Add</Button>
             </div>
             <Separator class="my-3" />
             <div class="space-y-3">
               <div v-if="formData.skills.length === 0" class="text-center py-4 text-muted-foreground">
                 No skills added yet. Click "Add" to add your first skill.
               </div>
-              <div v-for="(skill, i) in formData.skills" :key="i" class="rounded-lg border p-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div class="space-y-1"><Label :for="'sname-'+i">Name</Label><Input :id="'sname-'+i" v-model="skill.name" placeholder="JavaScript, Project Management, etc." /></div>
-                <div class="space-y-1">
-                  <Label :for="'sprof-'+i">Proficiency Level</Label>
-                  <div class="flex items-center space-x-2">
-                    <input
-                      :id="'sprof-'+i"
-                      type="range"
-                      v-model="skill.proficiency_level"
-                      min="1"
-                      max="5"
-                      class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                    />
-                    <span class="text-sm font-medium w-8 text-center">{{ skill.proficiency_level }}/5</span>
+              <Collapsible v-for="(skill, i) in formData.skills" :key="i" class="rounded-lg border bg-card-gradient">
+                <CollapsibleTrigger class="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted">
+                  <div class="text-sm font-medium truncate">{{ skill.name || 'Skill #' + (i+1) }}</div>
+                  <ChevronDown class="h-4 w-4 ml-2" />
+                </CollapsibleTrigger>
+                <CollapsibleContent class="px-3 py-3 border-t space-y-3">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                      <Label :for="'sname-'+i">Name</Label>
+                      <Input :id="'sname-'+i" v-model="skill.name" placeholder="JavaScript, Project Management, etc." class="border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/30" />
+                    </div>
+                    <div class="space-y-1">
+                      <Label :for="'sprof-'+i">Proficiency Level</Label>
+                      <div class="flex items-center space-x-2">
+                        <input
+                          :id="'sprof-'+i"
+                          type="range"
+                          v-model="skill.proficiency_level"
+                          min="1"
+                          max="5"
+                          class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                        />
+                        <span class="text-sm font-medium w-8 text-center">{{ skill.proficiency_level }}/5</span>
+                      </div>
+                      <div class="flex justify-between text-xs text-muted-foreground">
+                        <span>Beginner</span>
+                        <span>Expert</span>
+                      </div>
+                    </div>
                   </div>
-                  <div class="flex justify-between text-xs text-muted-foreground">
-                    <span>Beginner</span>
-                    <span>Expert</span>
+                  <div class="flex justify-end">
+                    <Button variant="ghost" size="sm" class="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white" @click="removeSkill(i)">Remove</Button>
                   </div>
-                </div>
-                <div class="md:col-span-2 flex justify-end">
-                  <Button variant="ghost" size="sm" @click="removeSkill(i)">Remove</Button>
-                </div>
-              </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
           </div>
         </section>
