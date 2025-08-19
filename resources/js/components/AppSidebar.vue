@@ -8,10 +8,10 @@ import { Link } from '@inertiajs/vue3';
 import { CreditCard, FileText, LayoutGrid, MessageCircle, Notebook, Send, Users } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
+const serviceNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        href: '/dashboard',
+        title: 'Home',
+        href: '/home',
         icon: LayoutGrid,
     },
     {
@@ -34,6 +34,9 @@ const mainNavItems: NavItem[] = [
         href: '/ai-auto-apply',
         icon: Send,
     },
+];
+
+const accountNavItems: NavItem[] = [
     {
         title: 'Billing',
         href: '/billing',
@@ -55,7 +58,7 @@ const footerNavItems: NavItem[] = [];
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="route('dashboard')">
+                        <Link :href="route('home')">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>
@@ -64,7 +67,8 @@ const footerNavItems: NavItem[] = [];
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain :items="serviceNavItems" title="Services" />
+            <NavMain :items="accountNavItems" title="Account" />
         </SidebarContent>
 
         <SidebarFooter v-if="footerNavItems.length > 0">
