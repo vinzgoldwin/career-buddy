@@ -531,7 +531,7 @@ onUnmounted(() => {
                     <!-- Open full editor page (non-modal) -->
                     <Button class="flex items-center gap-2 w-fit" @click="router.visit(route('ai-resume-builder.editor'))">
                         <FileText class="h-5 w-5" />
-                        Open Full Editor
+                            Resume Editor
                     </Button>
 
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, router, usePage } from '@inertiajs/vue3'
-import { reactive, computed } from 'vue'
+import { reactive, computed, onMounted, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -23,6 +23,7 @@ interface PrefillData { name: string; location: string; email: string; website: 
 const page: any = usePage()
 const user = page.props.auth.user
 const prefillData = (page.props.prefillData || {}) as Partial<PrefillData>
+const aiParsedData = page.props.aiParsedData as any
 
 interface FormData {
   name: string
@@ -43,11 +44,95 @@ const formData = reactive<FormData>({
   email: prefillData.email || user.email,
   website: prefillData.website || '',
   summary: prefillData.summary || '',
-  educations: [],
-  experiences: [],
-  licenses_and_certifications: [],
-  projects: [],
-  skills: []
+  // Initialize arrays from prefillData (fallback to one blank row like the main builder)
+  educations: prefillData.educations && prefillData.educations.length > 0
+    ? prefillData.educations
+    : [{ school: '', degree: '', field_of_study: '', start_date: '', end_date: '', currently_studying: false, grade: '', activities: '' }],
+  experiences: prefillData.experiences && prefillData.experiences.length > 0
+    ? prefillData.experiences
+    : [{ title: '', company: '', location: '', start_date: '', end_date: '', currently_working: false, employment_type_id: null, industry: '', description: '' }],
+  licenses_and_certifications: prefillData.licenses_and_certifications && prefillData.licenses_and_certifications.length > 0
+    ? prefillData.licenses_and_certifications
+    : [{ name: '', issuing_organization: '', issue_date: '', expiration_date: '', credential_id: '', credential_url: '' }],
+  projects: prefillData.projects && prefillData.projects.length > 0
+    ? prefillData.projects
+    : [{ name: '', description: '', start_date: '', end_date: '', url: '', skills_used: '' }],
+  skills: prefillData.skills && prefillData.skills.length > 0
+    ? prefillData.skills
+    : [{ name: '', proficiency_level: 3 }],
+})
+
+// If AI parsed data exists, populate form similarly to the main builder
+const populateFormWithAiData = (aiData: any) => {
+  if (!aiData) return
+  if (aiData.name) formData.name = aiData.name
+  if (aiData.location) formData.location = aiData.location
+  if (aiData.description) formData.summary = aiData.description
+
+  if (aiData.educations && aiData.educations.length > 0) {
+    formData.educations = aiData.educations.map((edu: any) => ({
+      school: edu.school || '',
+      degree: edu.degree || '',
+      field_of_study: edu.field_of_study || '',
+      start_date: edu.start_date || '',
+      end_date: edu.end_date || '',
+      currently_studying: !edu.end_date,
+      grade: edu.grade || '',
+      activities: edu.description || ''
+    }))
+  }
+
+  if (aiData.experiences && aiData.experiences.length > 0) {
+    formData.experiences = aiData.experiences.map((exp: any) => ({
+      title: exp.title || '',
+      company: exp.company || '',
+      location: exp.location || '',
+      start_date: exp.start_date || '',
+      end_date: exp.end_date || '',
+      currently_working: exp.currently_working || false,
+      employment_type_id: null,
+      industry: '',
+      description: exp.description || ''
+    }))
+  }
+
+  if (aiData.license_and_certifications && aiData.license_and_certifications.length > 0) {
+    formData.licenses_and_certifications = aiData.license_and_certifications.map((license: any) => ({
+      name: license.name || '',
+      issuing_organization: license.issuing_organization || '',
+      issue_date: license.issue_date || '',
+      expiration_date: license.expiration_date || '',
+      credential_id: license.credential_id || '',
+      credential_url: license.credential_url || ''
+    }))
+  }
+
+  if (aiData.projects && aiData.projects.length > 0) {
+    formData.projects = aiData.projects.map((project: any) => ({
+      name: project.name || '',
+      description: project.description || '',
+      start_date: project.start_date || '',
+      end_date: project.end_date || '',
+      url: project.url || '',
+      skills_used: Array.isArray(project.skills_used) ? project.skills_used.join(', ') : (project.skills_used || '')
+    }))
+  }
+
+  if (aiData.skills && aiData.skills.length > 0) {
+    formData.skills = aiData.skills.map((skill: string) => ({
+      name: skill,
+      proficiency_level: 3
+    }))
+  }
+}
+
+// Apply AI data on mount and when it changes
+onMounted(() => {
+  if (aiParsedData) populateFormWithAiData(aiParsedData)
+})
+
+watch(() => page.props.aiParsedData, (val) => {
+  if (val) populateFormWithAiData(val)
 })
 
 // Simple completion indicators
@@ -128,7 +213,7 @@ const submitForm = () => {
         </aside>
 
         <!-- Main editor -->
-        <section class="lg:col-span-6 space-y-4">
+        <section class="lg:col-span-9 space-y-4">
           <!-- Personal -->
           <div id="personal" class="scroll-mt-24 rounded-xl border bg-card p-4">
             <h2 class="text-lg font-semibold flex items-center gap-2">
@@ -351,62 +436,7 @@ const submitForm = () => {
             </div>
           </div>
         </section>
-
-        <!-- Live preview -->
-        <aside class="lg:col-span-3">
-          <div class="sticky top-20 space-y-4">
-            <div class="rounded-xl border bg-card p-4">
-              <h3 class="text-sm font-semibold mb-3">Preview</h3>
-              <!-- Personal -->
-              <div class="space-y-3">
-                <div class="rounded-lg border bg-background/50 p-3">
-                  <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2"><UserIcon class="h-4 w-4" /> Full Name</p>
-                  <p class="font-medium mt-1">{{ formData.name || 'Not provided' }}</p>
-                </div>
-                <div class="rounded-lg border bg-background/50 p-3">
-                  <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2"><Mail class="h-4 w-4" /> Email</p>
-                  <p class="font-medium mt-1">{{ formData.email || 'Not provided' }}</p>
-                </div>
-                <div class="rounded-lg border bg-background/50 p-3">
-                  <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2"><Globe class="h-4 w-4" /> Website</p>
-                  <p class="font-medium mt-1">{{ formData.website || 'Not provided' }}</p>
-                </div>
-              </div>
-
-              <Separator class="my-4" />
-
-              <!-- Education preview -->
-              <div>
-                <h4 class="text-sm font-semibold mb-2 flex items-center gap-2"><GraduationCap class="h-4 w-4 text-primary" /> Education</h4>
-                <div v-if="formData.educations.length" class="space-y-2">
-                <div v-for="(edu, i) in formData.educations" :key="i" class="rounded border p-2">
-                    <div class="font-medium">{{ edu.school || 'School' }}</div>
-                    <div class="text-xs text-muted-foreground">{{ edu.degree }}<span v-if="edu.field_of_study"> in {{ edu.field_of_study }}</span></div>
-                    <div class="text-xs text-muted-foreground flex items-center gap-1 mt-1"><Calendar class="h-3 w-3" /> {{ edu.start_date }} - {{ edu.end_date }}</div>
-                  </div>
-                </div>
-                <p v-else class="text-sm text-muted-foreground">No education</p>
-              </div>
-
-              <Separator class="my-4" />
-
-              <!-- Experience preview -->
-              <div>
-                <h4 class="text-sm font-semibold mb-2 flex items-center gap-2"><Briefcase class="h-4 w-4 text-primary" /> Experience</h4>
-                <div v-if="formData.experiences.length" class="space-y-2">
-                  <div v-for="(exp, i) in formData.experiences" :key="i" class="rounded border p-2">
-                    <div class="font-medium">{{ exp.title || 'Title' }}</div>
-                    <div class="text-xs text-muted-foreground">{{ exp.company }}</div>
-                    <div class="text-xs text-muted-foreground flex items-center gap-1 mt-1"><Calendar class="h-3 w-3" /> {{ exp.start_date }} - {{ exp.end_date }}</div>
-                  </div>
-                </div>
-                <p v-else class="text-sm text-muted-foreground">No experience</p>
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
     </div>
   </AppLayout>
 </template>
-
