@@ -54,7 +54,7 @@ class ResumeStoreRequest extends FormRequest
             // Licenses and certifications rules
             'licenses_and_certifications' => ['array'],
             'licenses_and_certifications.*.name' => ['nullable', 'string', 'max:255'],
-            'licenses_and_certifications.*.issuing_organization' => ['nullable', 'string', 'max:255'],
+            'licenses_and_certifications.*.issuing_organization' => ['string', 'max:255'],
             'licenses_and_certifications.*.issue_date' => ['nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\/\d{4}$/'],
             'licenses_and_certifications.*.expiration_date' => ['nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\/\d{4}$/'],
             'licenses_and_certifications.*.credential_id' => ['nullable', 'string', 'max:255'],

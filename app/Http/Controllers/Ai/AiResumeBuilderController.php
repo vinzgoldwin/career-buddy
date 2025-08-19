@@ -41,8 +41,11 @@ class AiResumeBuilderController extends Controller
             $employmentTypes = collect(); // Return empty collection if table doesn't exist
         }
 
+        $aiParsedData = session('ai_parsed_data');
+
         return Inertia::render('ai/AiResumeBuilder', [
             'employmentTypes' => $employmentTypes,
+            'aiParsedData' => $aiParsedData ?: null,
             'prefillData' => [
                 'name' => $user->name,
                 'location' => $user->location,
@@ -235,11 +238,6 @@ class AiResumeBuilderController extends Controller
         return redirect()->back()->with('success', 'Resume data saved successfully!');
     }
 
-    /**
-     * Handle PDF resume upload and extract text.
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function uploadResume(Request $request)
     {
         set_time_limit(150);
@@ -259,13 +257,9 @@ class AiResumeBuilderController extends Controller
             // Extract JSON from the response
             $content = $response['choices'][0]['message']['content'] ?? '';
 
-            // Log the raw response for debugging
-            Log::info('AI Resume Parsing Response', ['content' => $content]);
 
-            // Extract content between <structured_json> tags
             if (preg_match('/<structured_json>(.*?)<\/structured_json>/s', $content, $matches)) {
                 $jsonString = $matches[1];
-                // Clean up the JSON string
                 $jsonString = trim($jsonString);
                 Log::info('Extracted JSON String', ['jsonString' => $jsonString]);
 
@@ -274,29 +268,10 @@ class AiResumeBuilderController extends Controller
                     Log::info('Parsed Structured Data', ['structuredData' => $structuredData]);
 
                     if (json_last_error() === JSON_ERROR_NONE) {
-                        // Get all employment types, handle case where table doesn't exist
-                        try {
-                            $employmentTypes = EmploymentType::all();
-                        } catch (\Exception $e) {
-                            $employmentTypes = collect(); // Return empty collection if table doesn't exist
-                        }
-
-                        return Inertia::render('ai/AiResumeBuilder', [
-                            'employmentTypes' => $employmentTypes,
-                            'aiParsedData' => $structuredData,
-                            'prefillData' => [
-                                'name' => Auth::user()->name,
-                                'location' => Auth::user()->location,
-                                'email' => Auth::user()->email,
-                                'website' => Auth::user()->website,
-                                'summary' => Auth::user()->summary,
-                                'educations' => [],
-                                'experiences' => [],
-                                'licenses_and_certifications' => [],
-                                'projects' => [],
-                                'skills' => [],
-                            ],
-                        ]);
+                        // Flash structured data to session and redirect to the main page
+                        return redirect()
+                            ->route('ai-resume-builder')
+                            ->with('ai_parsed_data', $structuredData);
                     } else {
                         Log::error('JSON Parse Error', ['error' => json_last_error_msg()]);
                     }

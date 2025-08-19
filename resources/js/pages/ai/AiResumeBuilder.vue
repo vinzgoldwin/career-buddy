@@ -5,8 +5,28 @@ import { Head, usePage, router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FileText, Upload, Plus, Trash2, Sparkles } from 'lucide-vue-next';
-import { ref, reactive, watch, onMounted } from 'vue';
+import { notifySuccess, notifyError } from '@/lib/notify';
+import {
+  FileText,
+  Upload,
+  Plus,
+  Trash2,
+  Sparkles,
+  User as UserIcon,
+  MapPin,
+  Mail,
+  Globe,
+  GraduationCap,
+  Briefcase,
+  ListChecks,
+  Calendar,
+  Award,
+  Link,
+  Loader2,
+  CheckCircle2,
+  Folder
+} from 'lucide-vue-next';
+import { ref, reactive, watch, onMounted, onUnmounted, computed } from 'vue';
 import FullscreenDialog from '@/components/FullscreenDialog.vue';
 import FileUploadDialog from '@/components/FileUploadDialog.vue';
 
@@ -189,27 +209,37 @@ const formData = reactive({
 // Dialog states
 const isDialogOpen = ref(false);
 const isUploadDialogOpen = ref(false);
+// Upload processing overlay state
+const isProcessing = ref(false);
+const processingIndex = ref(0);
+let processingTimer: ReturnType<typeof setInterval> | null = null;
+const processingFlow = [
+  { key: 'uploading', title: 'Uploading your resume...' },
+  { key: 'extracting', title: 'Extracting text from your resume...' },
+  { key: 'analyzing', title: 'Analyzing your experience with AI...' },
+  { key: 'prefilling', title: 'Prefilling the form with your data...' },
+];
+const currentProcessingMessage = computed(() => processingFlow[Math.min(processingIndex.value, processingFlow.length - 1)].title);
 
 // Check for AI parsed data in page props on component mount
 onMounted(() => {
-  console.log('Page props on mount:', page.props);
   const aiParsedData = page.props.aiParsedData;
   if (aiParsedData) {
-    console.log('AI Parsed Data found on mount:', aiParsedData);
     populateFormWithAiData(aiParsedData);
     isDialogOpen.value = true;
   }
 });
 
-// Watch for changes in page props to auto-open dialog with AI parsed data
-watch(() => page.props, (newProps) => {
-  console.log('Page props changed:', newProps);
-  if (newProps.aiParsedData) {
-    console.log('AI Parsed Data found in watch:', newProps.aiParsedData);
-    populateFormWithAiData(newProps.aiParsedData);
-    isDialogOpen.value = true;
+// Watch only the AI data prop for changes
+watch(
+  () => page.props.aiParsedData,
+  (val) => {
+    if (val) {
+      populateFormWithAiData(val);
+      isDialogOpen.value = true;
+    }
   }
-}, { deep: true });
+);
 
 // Function to populate form with AI parsed data
 const populateFormWithAiData = (aiData: any) => {
@@ -379,9 +409,20 @@ const submitForm = () => {
   router.post(route('ai-resume-builder.store'), formData, {
     onSuccess: () => {
       isDialogOpen.value = false;
+      // Success toast
+      notifySuccess('Your resume data has been saved.', 'Saved');
     },
     onError: (errors: any) => {
       console.log('Validation errors:', errors);
+      const bag = errors?.errors || errors;
+      if (bag && typeof bag === 'object') {
+        Object.values(bag).forEach((msg: any) => {
+          const message = Array.isArray(msg) ? msg.join('\n') : String(msg);
+          notifyError(message, 'Validation error');
+        });
+      } else {
+        notifyError('Please review your inputs.', 'Validation error');
+      }
     }
   });
 };
@@ -390,6 +431,16 @@ const submitForm = () => {
 const handleFileSelected = (file: File) => {
   isUploadDialogOpen.value = false;
 
+  // Start processing overlay and step-through animation
+  isProcessing.value = true;
+  processingIndex.value = 0;
+  if (processingTimer) clearInterval(processingTimer);
+  processingTimer = setInterval(() => {
+    if (processingIndex.value < processingFlow.length - 1) {
+      processingIndex.value += 1;
+    }
+  }, 1800);
+
   // Create FormData object
   const formDataObj = new FormData();
   formDataObj.append('resume', file);
@@ -397,12 +448,43 @@ const handleFileSelected = (file: File) => {
   router.post(route('ai-resume-builder.upload'), formDataObj, {
     onSuccess: (response: any) => {
       console.log('File uploaded successfully:', response);
+      // Finish processing overlay
+      processingIndex.value = processingFlow.length - 1;
+      setTimeout(() => {
+        isProcessing.value = false;
+        if (processingTimer) clearInterval(processingTimer);
+        processingTimer = null;
+      }, 800);
+      notifySuccess('Resume uploaded and parsed.', 'Uploaded');
+      // Ensure dialog opens if AI data is present
+      const aiData = page.props.aiParsedData;
+      if (aiData) {
+        populateFormWithAiData(aiData);
+        isDialogOpen.value = true;
+      }
     },
     onError: (errors: any) => {
       console.log('Upload errors:', errors);
+      const bag = errors?.errors || errors;
+      if (bag && typeof bag === 'object') {
+        Object.values(bag).forEach((msg: any) => {
+          const message = Array.isArray(msg) ? msg.join('\n') : String(msg);
+          notifyError(message, 'Upload error');
+        });
+      } else {
+        notifyError('Failed to upload resume.', 'Upload error');
+      }
+      // Stop processing overlay on error
+      isProcessing.value = false;
+      if (processingTimer) clearInterval(processingTimer);
+      processingTimer = null;
     }
   });
 };
+
+onUnmounted(() => {
+  if (processingTimer) clearInterval(processingTimer);
+});
 
 </script>
 
@@ -411,6 +493,25 @@ const handleFileSelected = (file: File) => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 rounded-xl p-4 md:p-6 overflow-x-auto">
+            <!-- Upload Processing Overlay -->
+            <div v-if="isProcessing" class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+                <div class="w-full max-w-md rounded-xl border bg-card p-6 shadow-lg ring-1 ring-black/5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <Loader2 class="h-5 w-5 text-primary animate-spin" />
+                        <h3 class="text-lg font-semibold">Processing Resume</h3>
+                    </div>
+                    <p class="text-sm text-muted-foreground mb-4">{{ currentProcessingMessage }}</p>
+                    <ul class="space-y-2">
+                        <li v-for="(state, i) in processingFlow" :key="state.key" class="flex items-center gap-2">
+                            <CheckCircle2 v-if="i < processingIndex" class="h-4 w-4 text-green-500" />
+                            <Loader2 v-else-if="i === processingIndex" class="h-4 w-4 text-primary animate-spin" />
+                            <div v-else class="h-4 w-4 rounded-full border border-muted-foreground/30"></div>
+                            <span :class="['text-sm', i <= processingIndex ? 'text-foreground' : 'text-muted-foreground']">{{ state.title }}</span>
+                        </li>
+                    </ul>
+                    <div class="mt-6 text-xs text-muted-foreground">This may take up to a minute.</div>
+                </div>
+            </div>
             <div class="flex flex-col gap-2">
                 <h1 class="text-2xl font-bold tracking-tight">AI Resume Builder</h1>
                 <p class="text-muted-foreground">
@@ -437,46 +538,73 @@ const handleFileSelected = (file: File) => {
                 </div>
 
                 <!-- Beautiful View of User's Information -->
-                <div class="border rounded-lg p-6 bg-card">
-                    <div class="space-y-6">
+                <div class="relative rounded-xl p-6 bg-card/60 border shadow-sm ring-1 ring-black/5">
+                    <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-purple-500/60 to-pink-500/60 rounded-t-xl" />
+                    <div class="space-y-8">
                         <!-- Personal Information Preview -->
                         <div>
-                            <h2 class="text-xl font-bold mb-4">Personal Information</h2>
+                            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                                <span>Personal Information</span>
+                                <UserIcon class="h-5 w-5 text-primary" />
+                            </h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-sm text-muted-foreground">Full Name</p>
-                                    <p class="font-medium">{{ formData.name || 'Not provided' }}</p>
+                                <div class="rounded-lg border bg-background/50 p-3">
+                                    <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                                        <UserIcon class="h-4 w-4" /> Full Name
+                                    </p>
+                                    <p class="font-medium mt-1">{{ formData.name || 'Not provided' }}</p>
                                 </div>
-                                <div>
-                                    <p class="text-sm text-muted-foreground">Location</p>
-                                    <p class="font-medium">{{ formData.location || 'Not provided' }}</p>
+                                <div class="rounded-lg border bg-background/50 p-3">
+                                    <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                                        <MapPin class="h-4 w-4" /> Location
+                                    </p>
+                                    <p class="font-medium mt-1">{{ formData.location || 'Not provided' }}</p>
                                 </div>
-                                <div>
-                                    <p class="text-sm text-muted-foreground">Email</p>
-                                    <p class="font-medium">{{ formData.email || 'Not provided' }}</p>
+                                <div class="rounded-lg border bg-background/50 p-3">
+                                    <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                                        <Mail class="h-4 w-4" /> Email
+                                    </p>
+                                    <p class="font-medium mt-1">{{ formData.email || 'Not provided' }}</p>
                                 </div>
-                                <div>
-                                    <p class="text-sm text-muted-foreground">Website</p>
-                                    <p class="font-medium">{{ formData.website || 'Not provided' }}</p>
+                                <div class="rounded-lg border bg-background/50 p-3">
+                                    <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                                        <Globe class="h-4 w-4" /> Website
+                                    </p>
+                                    <p class="font-medium mt-1">{{ formData.website || 'Not provided' }}</p>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Professional Summary Preview -->
                         <div>
-                            <h2 class="text-xl font-bold mb-4">Professional Summary</h2>
-                            <p class="font-medium">{{ formData.summary || 'Not provided' }}</p>
+                            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                                <span>Professional Summary</span>
+                                <FileText class="h-5 w-5 text-primary" />
+                            </h2>
+                            <p class="font-medium leading-relaxed bg-background/50 border rounded-lg p-4">{{ formData.summary || 'Not provided' }}</p>
                         </div>
 
                         <!-- Education Preview -->
                         <div>
-                            <h2 class="text-xl font-bold mb-4">Education</h2>
+                            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                                <span>Education</span>
+                                <GraduationCap class="h-5 w-5 text-primary" />
+                            </h2>
                             <div v-if="formData.educations && formData.educations.length > 0" class="space-y-4">
-                                <div v-for="(education, index) in formData.educations" :key="index" class="border rounded-lg p-4">
-                                    <h3 class="font-bold">{{ education.school || 'School not provided' }}</h3>
-                                    <p>{{ education.degree }} in {{ education.field_of_study }}</p>
-                                    <p class="text-sm text-muted-foreground">
+                                <div
+                                  v-for="(education, index) in formData.educations"
+                                  :key="index"
+                                  class="rounded-lg border bg-background/50 p-4 pl-5 relative"
+                                >
+                                    <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-primary/40" />
+                                    <h3 class="font-semibold">{{ education.school || 'School not provided' }}</h3>
+                                    <p class="text-sm">{{ education.degree }}<span v-if="education.field_of_study"> in {{ education.field_of_study }}</span></p>
+                                    <p class="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                                        <Calendar class="h-4 w-4" />
                                         {{ education.start_date }} - {{ education.currently_studying ? 'Present' : education.end_date }}
+                                    </p>
+                                    <p v-if="education.activities" class="text-sm text-muted-foreground mt-2">
+                                        {{ education.activities }}
                                     </p>
                                 </div>
                             </div>
@@ -485,24 +613,107 @@ const handleFileSelected = (file: File) => {
 
                         <!-- Work Experience Preview -->
                         <div>
-                            <h2 class="text-xl font-bold mb-4">Work Experience</h2>
+                            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                                <span>Work Experience</span>
+                                <Briefcase class="h-5 w-5 text-primary" />
+                            </h2>
                             <div v-if="formData.experiences && formData.experiences.length > 0" class="space-y-4">
-                                <div v-for="(experience, index) in formData.experiences" :key="index" class="border rounded-lg p-4">
-                                    <h3 class="font-bold">{{ experience.title || 'Position not provided' }}</h3>
-                                    <p>{{ experience.company }}</p>
-                                    <p class="text-sm text-muted-foreground">
+                                <div
+                                  v-for="(experience, index) in formData.experiences"
+                                  :key="index"
+                                  class="rounded-lg border bg-background/50 p-4 pl-5 relative"
+                                >
+                                    <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-purple-500/30" />
+                                    <h3 class="font-semibold">{{ experience.title || 'Position not provided' }}</h3>
+                                    <p class="text-sm text-muted-foreground">{{ experience.company }}</p>
+                                    <p class="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                                        <Calendar class="h-4 w-4" />
                                         {{ experience.start_date }} - {{ experience.currently_working ? 'Present' : experience.end_date }}
+                                    </p>
+                                    <p v-if="experience.description" class="text-sm text-muted-foreground mt-2">
+                                        {{ experience.description }}
                                     </p>
                                 </div>
                             </div>
                             <p v-else class="text-muted-foreground">No work experience provided</p>
                         </div>
 
+                        <!-- Projects Preview -->
+                        <div>
+                            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                                <span>Projects</span>
+                                <Folder class="h-5 w-5 text-primary" />
+                            </h2>
+                            <div v-if="formData.projects && formData.projects.length > 0" class="space-y-4">
+                                <div
+                                  v-for="(project, index) in formData.projects"
+                                  :key="index"
+                                  class="rounded-lg border bg-background/50 p-4 pl-5 relative"
+                                >
+                                    <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-blue-500/30" />
+                                    <h3 class="font-semibold">{{ project.name || 'Project not provided' }}</h3>
+                                    <p v-if="project.description" class="text-sm text-muted-foreground mt-1">{{ project.description }}</p>
+                                    <p v-if="project.start_date || project.end_date" class="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                                        <Calendar class="h-4 w-4" />
+                                        {{ project.start_date }}<span v-if="project.start_date || project.end_date" class="mx-1">-</span>{{ project.end_date }}
+                                    </p>
+                                    <p v-if="project.url" class="text-xs mt-2">
+                                        <a :href="project.url" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-primary hover:underline">
+                                            <Link class="h-4 w-4" /> View project
+                                        </a>
+                                    </p>
+                                    <p v-if="project.skills_used" class="text-xs text-muted-foreground mt-2">Skills: {{ project.skills_used }}</p>
+                                </div>
+                            </div>
+                            <p v-else class="text-muted-foreground">No projects provided</p>
+                        </div>
+
+                        <!-- Licenses & Certifications Preview -->
+                        <div>
+                            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                                <span>Licenses & Certifications</span>
+                                <Award class="h-5 w-5 text-primary" />
+                            </h2>
+                            <div v-if="formData.licenses_and_certifications && formData.licenses_and_certifications.length > 0" class="space-y-4">
+                                <div
+                                  v-for="(license, index) in formData.licenses_and_certifications"
+                                  :key="index"
+                                  class="rounded-lg border bg-background/50 p-4 pl-5 relative"
+                                >
+                                    <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-emerald-500/30" />
+                                    <h3 class="font-semibold">{{ license.name || 'Certification' }}</h3>
+                                    <p class="text-sm text-muted-foreground">{{ license.issuing_organization }}</p>
+                                    <p v-if="license.issue_date && license.expiration_date" class="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                                        <Calendar class="h-4 w-4" />
+                                        Issued {{ license.issue_date }} <span class="mx-1">•</span> Expires {{ license.expiration_date }}
+                                    </p>
+                                    <p v-else-if="license.issue_date && !license.expiration_date" class="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                                        <Calendar class="h-4 w-4" />
+                                        Issued {{ license.issue_date }}
+                                    </p>
+                                    <p v-if="license.credential_id" class="text-xs text-muted-foreground mt-1">ID: {{ license.credential_id }}</p>
+                                    <p v-if="license.credential_url" class="text-xs mt-2">
+                                        <a :href="license.credential_url" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-primary hover:underline">
+                                            <Link class="h-4 w-4" /> View credential
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                            <p v-else class="text-muted-foreground">No licenses or certifications provided</p>
+                        </div>
+
                         <!-- Skills Preview -->
                         <div>
-                            <h2 class="text-xl font-bold mb-4">Skills</h2>
+                            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                                <span>Skills</span>
+                                <ListChecks class="h-5 w-5 text-primary" />
+                            </h2>
                             <div v-if="formData.skills && formData.skills.length > 0" class="flex flex-wrap gap-2">
-                                <div v-for="(skill, index) in formData.skills" :key="index" class="px-3 py-1 bg-primary/10 rounded-full text-sm">
+                                <div
+                                  v-for="(skill, index) in formData.skills"
+                                  :key="index"
+                                  class="px-3 py-1 bg-primary/10 rounded-full text-sm"
+                                >
                                     {{ skill.name || 'Skill not provided' }}
                                 </div>
                             </div>
