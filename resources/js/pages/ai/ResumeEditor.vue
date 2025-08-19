@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, router, usePage } from '@inertiajs/vue3'
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { reactive, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -10,7 +10,7 @@ import { Collapsible } from '@/components/ui/collapsible'
 import { CollapsibleContent } from '@/components/ui/collapsible'
 import { CollapsibleTrigger } from '@/components/ui/collapsible'
 import { notifySuccess, notifyError } from '@/lib/notify'
-import { Link as LinkIcon, Calendar, GraduationCap, Briefcase, User as UserIcon, Globe, Mail, Folder, CheckCircle2, ChevronDown, ChevronRight } from 'lucide-vue-next'
+import { Link as LinkIcon, Calendar, GraduationCap, Briefcase, User as UserIcon, Globe, Mail, Folder, CheckCircle2, ChevronDown, ChevronRight, Award, ListChecks } from 'lucide-vue-next'
 
 interface Education { school: string; degree: string; field_of_study: string; start_date: string; end_date: string; currently_studying: boolean; grade: string; activities: string }
 interface Experience { title: string; company: string; location: string; start_date: string; end_date: string; currently_working: boolean; employment_type_id: number | null; industry: string; description: string }
@@ -24,27 +24,30 @@ const page: any = usePage()
 const user = page.props.auth.user
 const prefillData = (page.props.prefillData || {}) as Partial<PrefillData>
 
-const formData = reactive({
+interface FormData {
+  name: string
+  location: string
+  email: string
+  website: string
+  summary: string
+  educations: Education[]
+  experiences: Experience[]
+  licenses_and_certifications: LicenseAndCertification[]
+  projects: Project[]
+  skills: Skill[]
+}
+
+const formData = reactive<FormData>({
   name: prefillData.name || user.name,
   location: prefillData.location || '',
   email: prefillData.email || user.email,
   website: prefillData.website || '',
   summary: prefillData.summary || '',
-  educations: prefillData.educations && prefillData.educations.length > 0 ? prefillData.educations : [
-    { school: '', degree: '', field_of_study: '', start_date: '', end_date: '', currently_studying: false, grade: '', activities: '' }
-  ],
-  experiences: prefillData.experiences && prefillData.experiences.length > 0 ? prefillData.experiences : [
-    { title: '', company: '', location: '', start_date: '', end_date: '', currently_working: false, employment_type_id: null, industry: '', description: '' }
-  ],
-  licenses_and_certifications: prefillData.licenses_and_certifications && prefillData.licenses_and_certifications.length > 0 ? prefillData.licenses_and_certifications : [
-    { name: '', issuing_organization: '', issue_date: '', expiration_date: '', credential_id: '', credential_url: '' }
-  ],
-  projects: prefillData.projects && prefillData.projects.length > 0 ? prefillData.projects : [
-    { name: '', description: '', start_date: '', end_date: '', url: '', skills_used: '' }
-  ],
-  skills: prefillData.skills && prefillData.skills.length > 0 ? prefillData.skills : [
-    { name: '', proficiency_level: 3 }
-  ]
+  educations: [],
+  experiences: [],
+  licenses_and_certifications: [],
+  projects: [],
+  skills: []
 })
 
 // Simple completion indicators
@@ -67,19 +70,22 @@ const sections = [
 ]
 
 const addEducation = () => formData.educations.push({ school: '', degree: '', field_of_study: '', start_date: '', end_date: '', currently_studying: false, grade: '', activities: '' })
-const removeEducation = (i: number) => formData.educations.length > 1 && formData.educations.splice(i, 1)
+const removeEducation = (i: number) => formData.educations.splice(i, 1)
 const addExperience = () => formData.experiences.push({ title: '', company: '', location: '', start_date: '', end_date: '', currently_working: false, employment_type_id: null, industry: '', description: '' })
-const removeExperience = (i: number) => formData.experiences.length > 1 && formData.experiences.splice(i, 1)
+const removeExperience = (i: number) => formData.experiences.splice(i, 1)
 const addProject = () => formData.projects.push({ name: '', description: '', start_date: '', end_date: '', url: '', skills_used: '' })
-const removeProject = (i: number) => formData.projects.length > 1 && formData.projects.splice(i, 1)
+const removeProject = (i: number) => formData.projects.splice(i, 1)
 const addLicense = () => formData.licenses_and_certifications.push({ name: '', issuing_organization: '', issue_date: '', expiration_date: '', credential_id: '', credential_url: '' })
-const removeLicense = (i: number) => formData.licenses_and_certifications.length > 1 && formData.licenses_and_certifications.splice(i, 1)
+const removeLicense = (i: number) => formData.licenses_and_certifications.splice(i, 1)
 const addSkill = () => formData.skills.push({ name: '', proficiency_level: 3 })
-const removeSkill = (i: number) => formData.skills.length > 1 && formData.skills.splice(i, 1)
+const removeSkill = (i: number) => formData.skills.splice(i, 1)
 
 const submitForm = () => {
   router.post(route('ai-resume-builder.store'), formData, {
-    onSuccess: () => notifySuccess('Your resume data has been saved.', 'Saved'),
+    onSuccess: () => {
+      notifySuccess('Your resume data has been saved.', 'Saved')
+      router.visit(route('ai-resume-builder'))
+    },
     onError: (errors: any) => {
       const bag = errors?.errors || errors
       if (bag && typeof bag === 'object') {
@@ -91,8 +97,7 @@ const submitForm = () => {
   })
 }
 
-// Open dialog fallback from editor
-const openDialog = () => router.visit(route('ai-resume-builder'))
+
 </script>
 
 <template>
@@ -102,10 +107,7 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
     <div class="px-4 md:px-6 lg:px-8 py-6">
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold tracking-tight">Resume Editor</h1>
-        <div class="flex gap-2">
-          <Button variant="outline" @click="openDialog">Use Dialog</Button>
-          <Button @click="submitForm">Save</Button>
-        </div>
+        <Button @click="submitForm">Save</Button>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -137,19 +139,19 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-2">
                 <Label for="name">Full Name</Label>
-                <Input id="name" v-model="(formData as any).name" placeholder="Your full name" />
+                <Input id="name" v-model="formData.name" placeholder="Your full name" />
               </div>
               <div class="space-y-2">
                 <Label for="location">Location</Label>
-                <Input id="location" v-model="(formData as any).location" placeholder="City, Country" />
+                <Input id="location" v-model="formData.location" placeholder="City, Country" />
               </div>
               <div class="space-y-2">
                 <Label for="email">Email</Label>
-                <Input id="email" v-model="(formData as any).email" type="email" placeholder="you@example.com" />
+                <Input id="email" v-model="formData.email" type="email" placeholder="you@example.com" />
               </div>
               <div class="space-y-2">
                 <Label for="website">Website</Label>
-                <Input id="website" v-model="(formData as any).website" placeholder="https://yourwebsite.com" />
+                <Input id="website" v-model="formData.website" placeholder="https://yourwebsite.com" />
               </div>
             </div>
           </div>
@@ -161,7 +163,7 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
               <LinkIcon class="h-5 w-5 text-primary rotate-90" />
             </h2>
             <Separator class="my-3" />
-            <textarea v-model="(formData as any).summary" class="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="A brief overview of your professional background, key skills, and career goals..." />
+            <textarea v-model="formData.summary" class="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="A brief overview of your professional background, key skills, and career goals..." />
           </div>
 
           <!-- Education -->
@@ -175,7 +177,10 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
             </div>
             <Separator class="my-3" />
             <div class="space-y-3">
-              <Collapsible v-for="(education, i) in (formData as any).educations" :key="i" class="rounded-lg border">
+              <div v-if="formData.educations.length === 0" class="text-center py-4 text-muted-foreground">
+                No education entries added yet. Click "Add" to add your first education.
+              </div>
+              <Collapsible v-for="(education, i) in formData.educations" :key="i" class="rounded-lg border">
                 <CollapsibleTrigger class="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted">
                   <div class="text-sm font-medium truncate">{{ education.school || 'Education #' + (i+1) }}</div>
                   <ChevronDown class="h-4 w-4 ml-2" />
@@ -190,7 +195,7 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
                     <div class="space-y-1 md:col-span-2"><Label :for="'activities-'+i">Activities</Label><Input :id="'activities-'+i" v-model="education.activities" placeholder="Student organizations, clubs, etc." /></div>
                   </div>
                   <div class="flex justify-end">
-                    <Button v-if="(formData as any).educations.length>1" variant="ghost" size="sm" @click="removeEducation(i)">Remove</Button>
+                    <Button variant="ghost" size="sm" @click="removeEducation(i)">Remove</Button>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -208,7 +213,10 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
             </div>
             <Separator class="my-3" />
             <div class="space-y-3">
-              <Collapsible v-for="(experience, i) in (formData as any).experiences" :key="i" class="rounded-lg border">
+              <div v-if="formData.experiences.length === 0" class="text-center py-4 text-muted-foreground">
+                No experience entries added yet. Click "Add" to add your first experience.
+              </div>
+              <Collapsible v-for="(experience, i) in formData.experiences" :key="i" class="rounded-lg border">
                 <CollapsibleTrigger class="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted">
                   <div class="text-sm font-medium truncate">{{ experience.title || 'Experience #' + (i+1) }}</div>
                   <ChevronDown class="h-4 w-4 ml-2" />
@@ -223,7 +231,7 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
                     <div class="space-y-1 md:col-span-2"><Label :for="'desc-'+i">Description</Label><textarea :id="'desc-'+i" v-model="experience.description" class="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Describe your responsibilities and achievements..." /></div>
                   </div>
                   <div class="flex justify-end">
-                    <Button v-if="(formData as any).experiences.length>1" variant="ghost" size="sm" @click="removeExperience(i)">Remove</Button>
+                    <Button variant="ghost" size="sm" @click="removeExperience(i)">Remove</Button>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -241,7 +249,10 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
             </div>
             <Separator class="my-3" />
             <div class="space-y-3">
-              <Collapsible v-for="(project, i) in (formData as any).projects" :key="i" class="rounded-lg border">
+              <div v-if="formData.projects.length === 0" class="text-center py-4 text-muted-foreground">
+                No project entries added yet. Click "Add" to add your first project.
+              </div>
+              <Collapsible v-for="(project, i) in formData.projects" :key="i" class="rounded-lg border">
                 <CollapsibleTrigger class="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted">
                   <div class="text-sm font-medium truncate">{{ project.name || 'Project #' + (i+1) }}</div>
                   <ChevronDown class="h-4 w-4 ml-2" />
@@ -256,7 +267,7 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
                     <div class="space-y-1 md:col-span-2"><Label :for="'pdesc-'+i">Description</Label><textarea :id="'pdesc-'+i" v-model="project.description" class="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Describe the project, your role, and key achievements..." /></div>
                   </div>
                   <div class="flex justify-end">
-                    <Button v-if="(formData as any).projects.length>1" variant="ghost" size="sm" @click="removeProject(i)">Remove</Button>
+                    <Button variant="ghost" size="sm" @click="removeProject(i)">Remove</Button>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -266,12 +277,18 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
           <!-- Licenses -->
           <div id="licenses" class="scroll-mt-24 rounded-xl border bg-card p-4">
             <div class="flex items-center justify-between">
-              <h2 class="text-lg font-semibold">Licenses & Certifications</h2>
+              <h2 class="text-lg font-semibold flex items-center gap-2">
+                <span>Licenses & Certifications</span>
+                <Award class="h-5 w-5 text-primary" />
+              </h2>
               <Button variant="outline" size="sm" @click="addLicense">Add</Button>
             </div>
             <Separator class="my-3" />
             <div class="space-y-3">
-              <Collapsible v-for="(license, i) in (formData as any).licenses_and_certifications" :key="i" class="rounded-lg border">
+              <div v-if="formData.licenses_and_certifications.length === 0" class="text-center py-4 text-muted-foreground">
+                No license or certification entries added yet. Click "Add" to add your first license or certification.
+              </div>
+              <Collapsible v-for="(license, i) in formData.licenses_and_certifications" :key="i" class="rounded-lg border">
                 <CollapsibleTrigger class="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted">
                   <div class="text-sm font-medium truncate">{{ license.name || 'License/Certification #' + (i+1) }}</div>
                   <ChevronDown class="h-4 w-4 ml-2" />
@@ -286,7 +303,7 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
                     <div class="space-y-1"><Label :for="'lcredurl-'+i">Credential URL</Label><Input :id="'lcredurl-'+i" v-model="license.credential_url" placeholder="https://example.com/credential" /></div>
                   </div>
                   <div class="flex justify-end">
-                    <Button v-if="(formData as any).licenses_and_certifications.length>1" variant="ghost" size="sm" @click="removeLicense(i)">Remove</Button>
+                    <Button variant="ghost" size="sm" @click="removeLicense(i)">Remove</Button>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -296,15 +313,40 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
           <!-- Skills -->
           <div id="skills" class="scroll-mt-24 rounded-xl border bg-card p-4">
             <div class="flex items-center justify-between">
-              <h2 class="text-lg font-semibold">Skills</h2>
+              <h2 class="text-lg font-semibold flex items-center gap-2">
+                <span>Skills</span>
+                <ListChecks class="h-5 w-5 text-primary" />
+              </h2>
               <Button variant="outline" size="sm" @click="addSkill">Add</Button>
             </div>
             <Separator class="my-3" />
             <div class="space-y-3">
-              <div v-for="(skill, i) in (formData as any).skills" :key="i" class="rounded-lg border p-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div v-if="formData.skills.length === 0" class="text-center py-4 text-muted-foreground">
+                No skills added yet. Click "Add" to add your first skill.
+              </div>
+              <div v-for="(skill, i) in formData.skills" :key="i" class="rounded-lg border p-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div class="space-y-1"><Label :for="'sname-'+i">Name</Label><Input :id="'sname-'+i" v-model="skill.name" placeholder="JavaScript, Project Management, etc." /></div>
-                <div class="space-y-1"><Label :for="'sprof-'+i">Proficiency (1-5)</Label><Input :id="'sprof-'+i" v-model.number="skill.proficiency_level" type="number" min="1" max="5" placeholder="3" /></div>
-                <div class="md:col-span-2 flex justify-end"><Button v-if="(formData as any).skills.length>1" variant="ghost" size="sm" @click="removeSkill(i)">Remove</Button></div>
+                <div class="space-y-1">
+                  <Label :for="'sprof-'+i">Proficiency Level</Label>
+                  <div class="flex items-center space-x-2">
+                    <input
+                      :id="'sprof-'+i"
+                      type="range"
+                      v-model="skill.proficiency_level"
+                      min="1"
+                      max="5"
+                      class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                    />
+                    <span class="text-sm font-medium w-8 text-center">{{ skill.proficiency_level }}/5</span>
+                  </div>
+                  <div class="flex justify-between text-xs text-muted-foreground">
+                    <span>Beginner</span>
+                    <span>Expert</span>
+                  </div>
+                </div>
+                <div class="md:col-span-2 flex justify-end">
+                  <Button variant="ghost" size="sm" @click="removeSkill(i)">Remove</Button>
+                </div>
               </div>
             </div>
           </div>
@@ -319,15 +361,15 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
               <div class="space-y-3">
                 <div class="rounded-lg border bg-background/50 p-3">
                   <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2"><UserIcon class="h-4 w-4" /> Full Name</p>
-                  <p class="font-medium mt-1">{{ (formData as any).name || 'Not provided' }}</p>
+                  <p class="font-medium mt-1">{{ formData.name || 'Not provided' }}</p>
                 </div>
                 <div class="rounded-lg border bg-background/50 p-3">
                   <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2"><Mail class="h-4 w-4" /> Email</p>
-                  <p class="font-medium mt-1">{{ (formData as any).email || 'Not provided' }}</p>
+                  <p class="font-medium mt-1">{{ formData.email || 'Not provided' }}</p>
                 </div>
                 <div class="rounded-lg border bg-background/50 p-3">
                   <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2"><Globe class="h-4 w-4" /> Website</p>
-                  <p class="font-medium mt-1">{{ (formData as any).website || 'Not provided' }}</p>
+                  <p class="font-medium mt-1">{{ formData.website || 'Not provided' }}</p>
                 </div>
               </div>
 
@@ -336,8 +378,8 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
               <!-- Education preview -->
               <div>
                 <h4 class="text-sm font-semibold mb-2 flex items-center gap-2"><GraduationCap class="h-4 w-4 text-primary" /> Education</h4>
-                <div v-if="(formData as any).educations.length" class="space-y-2">
-                  <div v-for="(edu, i) in (formData as any).educations" :key="i" class="rounded border p-2">
+                <div v-if="formData.educations.length" class="space-y-2">
+                <div v-for="(edu, i) in formData.educations" :key="i" class="rounded border p-2">
                     <div class="font-medium">{{ edu.school || 'School' }}</div>
                     <div class="text-xs text-muted-foreground">{{ edu.degree }}<span v-if="edu.field_of_study"> in {{ edu.field_of_study }}</span></div>
                     <div class="text-xs text-muted-foreground flex items-center gap-1 mt-1"><Calendar class="h-3 w-3" /> {{ edu.start_date }} - {{ edu.end_date }}</div>
@@ -351,8 +393,8 @@ const openDialog = () => router.visit(route('ai-resume-builder'))
               <!-- Experience preview -->
               <div>
                 <h4 class="text-sm font-semibold mb-2 flex items-center gap-2"><Briefcase class="h-4 w-4 text-primary" /> Experience</h4>
-                <div v-if="(formData as any).experiences.length" class="space-y-2">
-                  <div v-for="(exp, i) in (formData as any).experiences" :key="i" class="rounded border p-2">
+                <div v-if="formData.experiences.length" class="space-y-2">
+                  <div v-for="(exp, i) in formData.experiences" :key="i" class="rounded border p-2">
                     <div class="font-medium">{{ exp.title || 'Title' }}</div>
                     <div class="text-xs text-muted-foreground">{{ exp.company }}</div>
                     <div class="text-xs text-muted-foreground flex items-center gap-1 mt-1"><Calendar class="h-3 w-3" /> {{ exp.start_date }} - {{ exp.end_date }}</div>
