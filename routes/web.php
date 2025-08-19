@@ -24,6 +24,11 @@ Route::post('ai-resume-builder', [AiResumeBuilderController::class, 'store'])
     ->middleware(['auth', 'verified'])
     ->name('ai-resume-builder.store');
 
+// Dedicated editor view for the AI Resume Builder (non-modal)
+Route::get('ai-resume-builder/editor', [AiResumeBuilderController::class, 'editor'])
+    ->middleware(['auth', 'verified'])
+    ->name('ai-resume-builder.editor');
+
 Route::get('mock-interview', [MockInterviewController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('mock-interview');

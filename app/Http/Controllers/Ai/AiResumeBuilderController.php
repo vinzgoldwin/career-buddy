@@ -112,6 +112,93 @@ class AiResumeBuilderController extends Controller
     }
 
     /**
+     * Dedicated editor page (two-pane UI) with same data as index.
+     */
+    public function editor()
+    {
+        $user = Auth::user();
+
+        // Load user's related data
+        $user->load(['education', 'experiences', 'licensesAndCertifications', 'projects', 'skills']);
+
+        // Get all employment types, handle case where table doesn't exist
+        try {
+            $employmentTypes = EmploymentType::all();
+        } catch (\Exception $e) {
+            $employmentTypes = collect();
+        }
+
+        $aiParsedData = session('ai_parsed_data');
+
+        return Inertia::render('ai/ResumeEditor', [
+            'employmentTypes' => $employmentTypes,
+            'aiParsedData' => $aiParsedData ?: null,
+            'prefillData' => [
+                'name' => $user->name,
+                'location' => $user->location,
+                'email' => $user->email,
+                'website' => $user->website,
+                'summary' => $user->summary,
+                'educations' => $user->education->map(function ($education) {
+                    return [
+                        'school' => $education->school,
+                        'degree' => $education->degree,
+                        'field_of_study' => $education->field_of_study,
+                        'start_date' => $this->convertDateToMonthYear($education->start_date ? $education->start_date->format('Y-m-d') : null),
+                        'end_date' => $this->convertDateToMonthYear($education->end_date ? $education->end_date->format('Y-m-d') : null),
+                        'currently_studying' => $education->currently_studying,
+                        'grade' => $education->grade,
+                        'activities' => $education->activities,
+                    ];
+                })->toArray() ?: [['school' => '', 'degree' => '', 'field_of_study' => '', 'start_date' => '', 'end_date' => '', 'currently_studying' => false, 'grade' => '', 'activities' => '']],
+
+                'experiences' => $user->experiences->map(function ($experience) {
+                    return [
+                        'title' => $experience->title,
+                        'company' => $experience->company,
+                        'location' => $experience->location,
+                        'start_date' => $this->convertDateToMonthYear($experience->start_date ? $experience->start_date->format('Y-m-d') : null),
+                        'end_date' => $this->convertDateToMonthYear($experience->end_date ? $experience->end_date->format('Y-m-d') : null),
+                        'currently_working' => $experience->currently_working,
+                        'employment_type_id' => $experience->employment_type_id,
+                        'industry' => $experience->industry,
+                        'description' => $experience->description,
+                    ];
+                })->toArray() ?: [['title' => '', 'company' => '', 'location' => '', 'start_date' => '', 'end_date' => '', 'currently_working' => false, 'employment_type_id' => null, 'industry' => '', 'description' => '']],
+
+                'licenses_and_certifications' => $user->licensesAndCertifications->map(function ($license) {
+                    return [
+                        'name' => $license->name,
+                        'issuing_organization' => $license->issuing_organization,
+                        'issue_date' => $this->convertDateToMonthYear($license->issue_date ? $license->issue_date->format('Y-m-d') : null),
+                        'expiration_date' => $this->convertDateToMonthYear($license->expiration_date ? $license->expiration_date->format('Y-m-d') : null),
+                        'credential_id' => $license->credential_id,
+                        'credential_url' => $license->credential_url,
+                    ];
+                })->toArray() ?: [['name' => '', 'issuing_organization' => '', 'issue_date' => '', 'expiration_date' => '', 'credential_id' => '', 'credential_url' => '']],
+
+                'projects' => $user->projects->map(function ($project) {
+                    return [
+                        'name' => $project->name,
+                        'description' => $project->description,
+                        'start_date' => $this->convertDateToMonthYear($project->start_date ? $project->start_date->format('Y-m-d') : null),
+                        'end_date' => $this->convertDateToMonthYear($project->end_date ? $project->end_date->format('Y-m-d') : null),
+                        'url' => $project->url,
+                        'skills_used' => $project->skills_used,
+                    ];
+                })->toArray() ?: [['name' => '', 'description' => '', 'start_date' => '', 'end_date' => '', 'url' => '', 'skills_used' => '']],
+
+                'skills' => $user->skills->map(function ($skill) {
+                    return [
+                        'name' => $skill->name,
+                        'proficiency_level' => $skill->proficiency_level,
+                    ];
+                })->toArray() ?: [['name' => '', 'proficiency_level' => 3]],
+            ],
+        ]);
+    }
+
+    /**
      * Store the resume data.
      *
      * @return RedirectResponse
@@ -256,7 +343,6 @@ class AiResumeBuilderController extends Controller
 
             // Extract JSON from the response
             $content = $response['choices'][0]['message']['content'] ?? '';
-
 
             if (preg_match('/<structured_json>(.*?)<\/structured_json>/s', $content, $matches)) {
                 $jsonString = $matches[1];
