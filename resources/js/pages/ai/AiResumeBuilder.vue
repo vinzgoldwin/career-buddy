@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type User } from '@/types';
-import { Head, usePage, router } from '@inertiajs/vue3';
+import { Head, usePage, router, useForm } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -106,8 +106,71 @@ const page: any = usePage();
 const user = page.props.auth.user as User;
 const prefillData = (page.props.prefillData || {}) as Partial<PrefillData>;
 
+// Factory helpers
+const createEducation = (): Education => ({
+  id: null,
+  school: '',
+  degree: '',
+  field_of_study: '',
+  start_date: '',
+  end_date: '',
+  currently_studying: false,
+  grade: '',
+  activities: '',
+});
+
+const createExperience = (): Experience => ({
+  id: null,
+  title: '',
+  company: '',
+  location: '',
+  start_date: '',
+  end_date: '',
+  currently_working: false,
+  employment_type_id: null,
+  industry: '',
+  description: '',
+});
+
+const createLicense = (): LicenseAndCertification => ({
+  id: null,
+  name: '',
+  issuing_organization: '',
+  issue_date: '',
+  expiration_date: '',
+  credential_id: '',
+  credential_url: '',
+});
+
+const createProject = (): Project => ({
+  id: null,
+  name: '',
+  description: '',
+  start_date: '',
+  end_date: '',
+  url: '',
+  skills_used: '',
+});
+
+const createSkill = (): Skill => ({
+  id: null,
+  name: '',
+  proficiency_level: 3,
+});
+
+// Generic array helpers
+function addItem<T>(items: T[], factory: () => T) {
+  items.push(factory());
+}
+
+function removeItem<T>(items: T[], index: number) {
+  if (items.length > 1) {
+    items.splice(index, 1);
+  }
+}
+
 // Form data
-const formData = reactive({
+const form = useForm({
   name: prefillData.name || user.name,
   location: prefillData.location || '',
   email: prefillData.email || user.email,
@@ -115,65 +178,57 @@ const formData = reactive({
   summary: prefillData.summary || '',
   educations: prefillData.educations && prefillData.educations.length > 0
     ? prefillData.educations
-    : [{
-        id: null,
-        school: '',
-        degree: '',
-        field_of_study: '',
-        start_date: '',
-        end_date: '',
-        currently_studying: false,
-        grade: '',
-        activities: ''
-      }],
+    : [createEducation()],
   experiences: prefillData.experiences && prefillData.experiences.length > 0
     ? prefillData.experiences
-    : [{
-        id: null,
-        title: '',
-        company: '',
-        location: '',
-        start_date: '',
-        end_date: '',
-        currently_working: false,
-        employment_type_id: null,
-        industry: '',
-        description: ''
-      }],
+    : [createExperience()],
   licenses_and_certifications: prefillData.licenses_and_certifications && prefillData.licenses_and_certifications.length > 0
     ? prefillData.licenses_and_certifications
-    : [{
-        id: null,
-        name: '',
-        issuing_organization: '',
-        issue_date: '',
-        expiration_date: '',
-        credential_id: '',
-        credential_url: ''
-      }],
+    : [createLicense()],
   projects: prefillData.projects && prefillData.projects.length > 0
     ? prefillData.projects
-    : [{
-        id: null,
-        name: '',
-        description: '',
-        start_date: '',
-        end_date: '',
-        url: '',
-        skills_used: ''
-      }],
+    : [createProject()],
   skills: prefillData.skills && prefillData.skills.length > 0
     ? prefillData.skills
-    : [{
-        id: null,
-        name: '',
-        proficiency_level: 3
-      }]
+    : [createSkill()],
 });
 
 // Dialog states
 const isDialogOpen = ref(false);
 const isUploadDialogOpen = ref(false);
+// Paste Job Description dialog state
+const isPasteJobDialogOpen = ref(false);
+const jobParseForm = useForm({ raw: '' });
+const isParsingJob = ref(false);
+
+const submitJobDescription = () => {
+  if (!jobParseForm.raw || jobParseForm.raw.trim().length < 30) {
+    notifyError('Please paste a longer job description.', 'Too short');
+    return;
+  }
+
+  isParsingJob.value = true;
+  jobParseForm.post(route('ai-resume-builder.parse-job'), {
+    preserveScroll: true,
+    onSuccess: () => {
+      notifySuccess('Job description submitted.', 'Received');
+      isPasteJobDialogOpen.value = false;
+      isParsingJob.value = false;
+    },
+    onError: (errors: any) => {
+      const bag = errors?.errors || errors;
+      if (bag && typeof bag === 'object') {
+        Object.values(bag).forEach((msg: any) => {
+          const message = Array.isArray(msg) ? msg.join('\n') : String(msg);
+          notifyError(message, 'Submission error');
+        });
+      } else {
+        notifyError('Failed to submit description.', 'Submission error');
+      }
+      isParsingJob.value = false;
+    }
+  });
+};
 // Upload processing overlay state
 const isProcessing = ref(false);
 const processingIndex = ref(0);
@@ -211,13 +266,13 @@ const populateFormWithAiData = (aiData: any) => {
   console.log('Populating form with AI data:', aiData);
 
   // Populate basic info
-  if (aiData.name) formData.name = aiData.name;
-  if (aiData.location) formData.location = aiData.location;
-  if (aiData.description) formData.summary = aiData.description;
+  if (aiData.name) form.name = aiData.name;
+  if (aiData.location) form.location = aiData.location;
+  if (aiData.description) form.summary = aiData.description;
 
   // Populate educations
   if (aiData.educations && aiData.educations.length > 0) {
-    formData.educations = aiData.educations.map((edu: any) => ({
+    form.educations = aiData.educations.map((edu: any) => ({
       id: null,
       school: edu.school || '',
       degree: edu.degree || '',
@@ -232,7 +287,7 @@ const populateFormWithAiData = (aiData: any) => {
 
   // Populate experiences
   if (aiData.experiences && aiData.experiences.length > 0) {
-    formData.experiences = aiData.experiences.map((exp: any) => ({
+    form.experiences = aiData.experiences.map((exp: any) => ({
       id: null,
       title: exp.title || '',
       company: exp.company || '',
@@ -248,7 +303,7 @@ const populateFormWithAiData = (aiData: any) => {
 
   // Populate licenses and certifications
   if (aiData.license_and_certifications && aiData.license_and_certifications.length > 0) {
-    formData.licenses_and_certifications = aiData.license_and_certifications.map((license: any) => ({
+    form.licenses_and_certifications = aiData.license_and_certifications.map((license: any) => ({
       id: null,
       name: license.name || '',
       issuing_organization: license.issuing_organization || '',
@@ -261,7 +316,7 @@ const populateFormWithAiData = (aiData: any) => {
 
   // Populate projects
   if (aiData.projects && aiData.projects.length > 0) {
-    formData.projects = aiData.projects.map((project: any) => ({
+    form.projects = aiData.projects.map((project: any) => ({
       id: null,
       name: project.name || '',
       description: project.description || '',
@@ -274,114 +329,35 @@ const populateFormWithAiData = (aiData: any) => {
 
   // Populate skills
   if (aiData.skills && aiData.skills.length > 0) {
-    formData.skills = aiData.skills.map((skill: string) => ({
+    form.skills = aiData.skills.map((skill: string) => ({
       id: null,
       name: skill,
       proficiency_level: 3 // Default proficiency level
     }));
   }
 
-  console.log('Form data after population:', formData);
+  console.log('Form data after population:', form);
 };
 
-// Add new item to array
-const addEducation = () => {
-  formData.educations.push({
-    id: null,
-    school: '',
-    degree: '',
-    field_of_study: '',
-    start_date: '',
-    end_date: '',
-    currently_studying: false,
-    grade: '',
-    activities: ''
-  });
-};
+// Add item helpers
+const addEducation = () => addItem(form.educations, createEducation);
+const addExperience = () => addItem(form.experiences, createExperience);
+const addLicense = () => addItem(form.licenses_and_certifications, createLicense);
+const addProject = () => addItem(form.projects, createProject);
+const addSkill = () => addItem(form.skills, createSkill);
 
-const addExperience = () => {
-  formData.experiences.push({
-    id: null,
-    title: '',
-    company: '',
-    location: '',
-    start_date: '',
-    end_date: '',
-    currently_working: false,
-    employment_type_id: null,
-    industry: '',
-    description: ''
-  });
-};
-
-const addLicense = () => {
-  formData.licenses_and_certifications.push({
-    id: null,
-    name: '',
-    issuing_organization: '',
-    issue_date: '',
-    expiration_date: '',
-    credential_id: '',
-    credential_url: ''
-  });
-};
-
-const addProject = () => {
-  formData.projects.push({
-    id: null,
-    name: '',
-    description: '',
-    start_date: '',
-    end_date: '',
-    url: '',
-    skills_used: ''
-  });
-};
-
-const addSkill = () => {
-  formData.skills.push({
-    id: null,
-    name: '',
-    proficiency_level: 3
-  });
-};
-
-// Remove item from array
-const removeEducation = (index: number) => {
-  if (formData.educations.length > 1) {
-    formData.educations.splice(index, 1);
-  }
-};
-
-const removeExperience = (index: number) => {
-  if (formData.experiences.length > 1) {
-    formData.experiences.splice(index, 1);
-  }
-};
-
-const removeLicense = (index: number) => {
-  if (formData.licenses_and_certifications.length > 1) {
-    formData.licenses_and_certifications.splice(index, 1);
-  }
-};
-
-const removeProject = (index: number) => {
-  if (formData.projects.length > 1) {
-    formData.projects.splice(index, 1);
-  }
-};
-
-const removeSkill = (index: number) => {
-  if (formData.skills.length > 1) {
-    formData.skills.splice(index, 1);
-  }
-};
+// Remove item helpers
+const removeEducation = (index: number) => removeItem(form.educations, index);
+const removeExperience = (index: number) => removeItem(form.experiences, index);
+const removeLicense = (index: number) => removeItem(form.licenses_and_certifications, index);
+const removeProject = (index: number) => removeItem(form.projects, index);
+const removeSkill = (index: number) => removeItem(form.skills, index);
 
 // Submit form
 const submitForm = () => {
-  console.log('Form submitted:', formData);
+  console.log('Form submitted:', form);
   // Send the data to the backend
-  router.post(route('ai-resume-builder.store'), formData, {
+  form.post(route('ai-resume-builder.store'), {
     onSuccess: () => {
       isDialogOpen.value = false;
       // Success toast
@@ -417,10 +393,10 @@ const handleFileSelected = (file: File) => {
   }, 1800);
 
   // Create FormData object
-  const formDataObj = new FormData();
-  formDataObj.append('resume', file);
+  const formObj = new FormData();
+  formObj.append('resume', file);
 
-  router.post(route('ai-resume-builder.upload'), formDataObj, {
+  router.post(route('ai-resume-builder.upload'), formObj, {
     onSuccess: (response: any) => {
       console.log('File uploaded successfully:', response);
       // Finish processing overlay
@@ -508,6 +484,12 @@ onUnmounted(() => {
                         <FileText class="h-5 w-5" />
                             Resume Editor
                     </Button>
+
+                    <!-- Paste Job Description Button -->
+                    <Button variant="outline" class="flex items-center gap-2 w-fit" @click="isPasteJobDialogOpen = true">
+                        <FileText class="h-5 w-5" />
+                        Paste Job Description
+                    </Button>
                 </div>
 
                 <!-- Beautiful View of User's Information -->
@@ -525,25 +507,25 @@ onUnmounted(() => {
                                     <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
                                         <UserIcon class="h-4 w-4" /> Full Name
                                     </p>
-                                    <p class="font-medium mt-1">{{ formData.name || 'Not provided' }}</p>
+                                    <p class="font-medium mt-1">{{ form.name || 'Not provided' }}</p>
                                 </div>
                                 <div class="rounded-lg border bg-card-gradient p-3">
                                     <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
                                         <MapPin class="h-4 w-4" /> Location
                                     </p>
-                                    <p class="font-medium mt-1">{{ formData.location || 'Not provided' }}</p>
+                                    <p class="font-medium mt-1">{{ form.location || 'Not provided' }}</p>
                                 </div>
                                 <div class="rounded-lg border bg-card-gradient p-3">
                                     <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
                                         <Mail class="h-4 w-4" /> Email
                                     </p>
-                                    <p class="font-medium mt-1">{{ formData.email || 'Not provided' }}</p>
+                                    <p class="font-medium mt-1">{{ form.email || 'Not provided' }}</p>
                                 </div>
                                 <div class="rounded-lg border bg-card-gradient p-3">
                                     <p class="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
                                         <Globe class="h-4 w-4" /> Website
                                     </p>
-                                    <p class="font-medium mt-1">{{ formData.website || 'Not provided' }}</p>
+                                    <p class="font-medium mt-1">{{ form.website || 'Not provided' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -554,7 +536,7 @@ onUnmounted(() => {
                                 <span>Professional Summary</span>
                                 <FileText class="h-5 w-5 text-primary" />
                             </h2>
-                            <p class="font-medium leading-relaxed bg-card-gradient border rounded-lg p-4">{{ formData.summary || 'Not provided' }}</p>
+                            <p class="font-medium leading-relaxed bg-card-gradient border rounded-lg p-4">{{ form.summary || 'Not provided' }}</p>
                         </div>
 
                         <!-- Education Preview -->
@@ -563,9 +545,9 @@ onUnmounted(() => {
                                 <span>Education</span>
                                 <GraduationCap class="h-5 w-5 text-primary" />
                             </h2>
-                            <div v-if="formData.educations && formData.educations.length > 0" class="space-y-4">
+                            <div v-if="form.educations && form.educations.length > 0" class="space-y-4">
                                 <div
-                                  v-for="(education, index) in formData.educations"
+                                  v-for="(education, index) in form.educations"
                                   :key="index"
                                   class="rounded-lg border bg-card-gradient p-4 pl-5 relative"
                                 >
@@ -590,9 +572,9 @@ onUnmounted(() => {
                                 <span>Work Experience</span>
                                 <Briefcase class="h-5 w-5 text-primary" />
                             </h2>
-                            <div v-if="formData.experiences && formData.experiences.length > 0" class="space-y-4">
+                            <div v-if="form.experiences && form.experiences.length > 0" class="space-y-4">
                                 <div
-                                  v-for="(experience, index) in formData.experiences"
+                                  v-for="(experience, index) in form.experiences"
                                   :key="index"
                                   class="rounded-lg border bg-card-gradient p-4 pl-5 relative"
                                 >
@@ -617,9 +599,9 @@ onUnmounted(() => {
                                 <span>Projects</span>
                                 <Folder class="h-5 w-5 text-primary" />
                             </h2>
-                            <div v-if="formData.projects && formData.projects.length > 0" class="space-y-4">
+                            <div v-if="form.projects && form.projects.length > 0" class="space-y-4">
                                 <div
-                                  v-for="(project, index) in formData.projects"
+                                  v-for="(project, index) in form.projects"
                                   :key="index"
                                   class="rounded-lg border bg-card-gradient p-4 pl-5 relative"
                                 >
@@ -647,9 +629,9 @@ onUnmounted(() => {
                                 <span>Licenses & Certifications</span>
                                 <Award class="h-5 w-5 text-primary" />
                             </h2>
-                            <div v-if="formData.licenses_and_certifications && formData.licenses_and_certifications.length > 0" class="space-y-4">
+                            <div v-if="form.licenses_and_certifications && form.licenses_and_certifications.length > 0" class="space-y-4">
                                 <div
-                                  v-for="(license, index) in formData.licenses_and_certifications"
+                                  v-for="(license, index) in form.licenses_and_certifications"
                                   :key="index"
                                   class="rounded-lg border bg-card-gradient p-4 pl-5 relative"
                                 >
@@ -681,9 +663,9 @@ onUnmounted(() => {
                                 <span>Skills</span>
                                 <ListChecks class="h-5 w-5 text-primary" />
                             </h2>
-                            <div v-if="formData.skills && formData.skills.length > 0" class="flex flex-wrap gap-2">
+                            <div v-if="form.skills && form.skills.length > 0" class="flex flex-wrap gap-2">
                                 <div
-                                  v-for="(skill, index) in formData.skills"
+                                  v-for="(skill, index) in form.skills"
                                   :key="index"
                                   class="px-3 py-1 bg-primary/10 rounded-full text-sm"
                                 >
@@ -708,22 +690,22 @@ onUnmounted(() => {
                               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div class="space-y-2">
                                       <Label for="name">Full Name</Label>
-                                      <Input id="name" v-model="formData.name" disabled />
+                                      <Input id="name" v-model="form.name" disabled />
                                   </div>
 
                                   <div class="space-y-2">
                                       <Label for="location">Location</Label>
-                                      <Input id="location" v-model="formData.location" placeholder="City, Country" />
+                                      <Input id="location" v-model="form.location" placeholder="City, Country" />
                                   </div>
 
                                   <div class="space-y-2">
                                       <Label for="email">Email</Label>
-                                      <Input id="email" v-model="formData.email" type="email" disabled />
+                                      <Input id="email" v-model="form.email" type="email" disabled />
                                   </div>
 
                                   <div class="space-y-2">
                                       <Label for="website">Website</Label>
-                                      <Input id="website" v-model="formData.website" placeholder="https://yourwebsite.com" />
+                                      <Input id="website" v-model="form.website" placeholder="https://yourwebsite.com" />
                                   </div>
                               </div>
 
@@ -731,7 +713,7 @@ onUnmounted(() => {
                                   <Label for="summary">Professional Summary</Label>
                                   <textarea
                                       id="summary"
-                                      v-model="formData.summary"
+                                      v-model="form.summary"
                                       placeholder="A brief overview of your professional background, key skills, and career goals..."
                                       class="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                                   />
@@ -747,11 +729,11 @@ onUnmounted(() => {
                                       </Button>
                                   </div>
 
-                                  <div v-for="(education, index) in formData.educations" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
+                                  <div v-for="(education, index) in form.educations" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
                                       <div class="flex justify-between items-start">
                                           <h4 class="font-medium">Education #{{ index + 1 }}</h4>
                                           <Button
-                                              v-if="formData.educations.length > 1"
+                                              v-if="form.educations.length > 1"
                                               type="button"
                                               variant="ghost"
                                               size="sm"
@@ -822,11 +804,11 @@ onUnmounted(() => {
                                       </Button>
                                   </div>
 
-                                  <div v-for="(experience, index) in formData.experiences" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
+                                  <div v-for="(experience, index) in form.experiences" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
                                       <div class="flex justify-between items-start">
                                           <h4 class="font-medium">Experience #{{ index + 1 }}</h4>
                                           <Button
-                                              v-if="formData.experiences.length > 1"
+                                              v-if="form.experiences.length > 1"
                                               type="button"
                                               variant="ghost"
                                               size="sm"
@@ -927,11 +909,11 @@ onUnmounted(() => {
                                       </Button>
                                   </div>
 
-                                  <div v-for="(license, index) in formData.licenses_and_certifications" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
+                                  <div v-for="(license, index) in form.licenses_and_certifications" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
                                       <div class="flex justify-between items-start">
                                           <h4 class="font-medium">License/Certification #{{ index + 1 }}</h4>
                                           <Button
-                                              v-if="formData.licenses_and_certifications.length > 1"
+                                              v-if="form.licenses_and_certifications.length > 1"
                                               type="button"
                                               variant="ghost"
                                               size="sm"
@@ -985,11 +967,11 @@ onUnmounted(() => {
                                       </Button>
                                   </div>
 
-                                  <div v-for="(project, index) in formData.projects" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
+                                  <div v-for="(project, index) in form.projects" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
                                       <div class="flex justify-between items-start">
                                           <h4 class="font-medium">Project #{{ index + 1 }}</h4>
                                           <Button
-                                              v-if="formData.projects.length > 1"
+                                              v-if="form.projects.length > 1"
                                               type="button"
                                               variant="ghost"
                                               size="sm"
@@ -1048,11 +1030,11 @@ onUnmounted(() => {
                                       </Button>
                                   </div>
 
-                                  <div v-for="(skill, index) in formData.skills" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
+                                  <div v-for="(skill, index) in form.skills" :key="index" class="border rounded-lg p-4 space-y-4 bg-card-gradient">
                                       <div class="flex justify-between items-start">
                                           <h4 class="font-medium">Skill #{{ index + 1 }}</h4>
                                           <Button
-                                              v-if="formData.skills.length > 1"
+                                              v-if="form.skills.length > 1"
                                               type="button"
                                               variant="ghost"
                                               size="sm"
@@ -1100,6 +1082,34 @@ onUnmounted(() => {
                                 Save
                             </Button>
                           </template>
+                </FullscreenDialog>
+
+                <!-- Paste Job Description Dialog -->
+                <FullscreenDialog
+                  :open="isPasteJobDialogOpen"
+                  title="Paste Job Description"
+                  description="Paste a raw job post. We will parse it into structured data."
+                  @close="isPasteJobDialogOpen = false"
+                >
+                  <div class="space-y-4">
+                    <label class="text-sm font-medium text-foreground">Raw job description</label>
+                    <textarea
+                      v-model="jobParseForm.raw"
+                      rows="14"
+                      placeholder="Paste the full job description here..."
+                      class="w-full rounded-md border bg-background p-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+
+                    <p class="text-xs text-muted-foreground">Tip: Include responsibilities and qualifications sections for best results.</p>
+                  </div>
+
+                  <template #footer>
+                    <Button variant="ghost" @click="isPasteJobDialogOpen = false">Cancel</Button>
+                    <Button :disabled="isParsingJob" class="bg-primary-gradient text-white hover:opacity-90" @click="submitJobDescription">
+                      <Loader2 v-if="isParsingJob" class="h-4 w-4 mr-2 animate-spin" />
+                      Submit
+                    </Button>
+                  </template>
                 </FullscreenDialog>
 
                 <!-- File Upload Dialog -->

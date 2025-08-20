@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\Ai\AiAutoApplyController;
+use App\Http\Controllers\Ai\AiJobController;
 use App\Http\Controllers\Ai\AiResumeBuilderController;
 use App\Http\Controllers\Ai\InterviewQuestionBankController;
 use App\Http\Controllers\Ai\MockInterviewController;
@@ -63,6 +64,10 @@ Route::get('affiliate', [AffiliateController::class, 'index'])
 Route::post('ai-resume-builder/upload', [AiResumeBuilderController::class, 'uploadResume'])
     ->middleware(['auth'])
     ->name('ai-resume-builder.upload');
+
+Route::post('ai-resume-builder/parse-job', [AiJobController::class, 'parse'])
+    ->middleware(['auth', 'verified'])
+    ->name('ai-resume-builder.parse-job');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
