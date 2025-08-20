@@ -32,6 +32,7 @@ import FileUploadDialog from '@/components/FileUploadDialog.vue';
 
 // Define the structure of prefillData
 interface Education {
+  id: number | null;
   school: string;
   degree: string;
   field_of_study: string;
@@ -43,6 +44,7 @@ interface Education {
 }
 
 interface Experience {
+  id: number | null;
   title: string;
   company: string;
   location: string;
@@ -55,6 +57,7 @@ interface Experience {
 }
 
 interface LicenseAndCertification {
+  id: number | null;
   name: string;
   issuing_organization: string;
   issue_date: string;
@@ -64,6 +67,7 @@ interface LicenseAndCertification {
 }
 
 interface Project {
+  id: number | null;
   name: string;
   description: string;
   start_date: string;
@@ -73,6 +77,7 @@ interface Project {
 }
 
 interface Skill {
+  id: number | null;
   name: string;
   proficiency_level: number;
 }
@@ -111,6 +116,7 @@ const formData = reactive({
   educations: prefillData.educations && prefillData.educations.length > 0
     ? prefillData.educations
     : [{
+        id: null,
         school: '',
         degree: '',
         field_of_study: '',
@@ -123,6 +129,7 @@ const formData = reactive({
   experiences: prefillData.experiences && prefillData.experiences.length > 0
     ? prefillData.experiences
     : [{
+        id: null,
         title: '',
         company: '',
         location: '',
@@ -136,6 +143,7 @@ const formData = reactive({
   licenses_and_certifications: prefillData.licenses_and_certifications && prefillData.licenses_and_certifications.length > 0
     ? prefillData.licenses_and_certifications
     : [{
+        id: null,
         name: '',
         issuing_organization: '',
         issue_date: '',
@@ -146,6 +154,7 @@ const formData = reactive({
   projects: prefillData.projects && prefillData.projects.length > 0
     ? prefillData.projects
     : [{
+        id: null,
         name: '',
         description: '',
         start_date: '',
@@ -156,6 +165,7 @@ const formData = reactive({
   skills: prefillData.skills && prefillData.skills.length > 0
     ? prefillData.skills
     : [{
+        id: null,
         name: '',
         proficiency_level: 3
       }]
@@ -208,6 +218,7 @@ const populateFormWithAiData = (aiData: any) => {
   // Populate educations
   if (aiData.educations && aiData.educations.length > 0) {
     formData.educations = aiData.educations.map((edu: any) => ({
+      id: null,
       school: edu.school || '',
       degree: edu.degree || '',
       field_of_study: edu.field_of_study || '',
@@ -222,6 +233,7 @@ const populateFormWithAiData = (aiData: any) => {
   // Populate experiences
   if (aiData.experiences && aiData.experiences.length > 0) {
     formData.experiences = aiData.experiences.map((exp: any) => ({
+      id: null,
       title: exp.title || '',
       company: exp.company || '',
       location: exp.location || '',
@@ -237,6 +249,7 @@ const populateFormWithAiData = (aiData: any) => {
   // Populate licenses and certifications
   if (aiData.license_and_certifications && aiData.license_and_certifications.length > 0) {
     formData.licenses_and_certifications = aiData.license_and_certifications.map((license: any) => ({
+      id: null,
       name: license.name || '',
       issuing_organization: license.issuing_organization || '',
       issue_date: license.issue_date || '',
@@ -249,6 +262,7 @@ const populateFormWithAiData = (aiData: any) => {
   // Populate projects
   if (aiData.projects && aiData.projects.length > 0) {
     formData.projects = aiData.projects.map((project: any) => ({
+      id: null,
       name: project.name || '',
       description: project.description || '',
       start_date: project.start_date || '',
@@ -261,6 +275,7 @@ const populateFormWithAiData = (aiData: any) => {
   // Populate skills
   if (aiData.skills && aiData.skills.length > 0) {
     formData.skills = aiData.skills.map((skill: string) => ({
+      id: null,
       name: skill,
       proficiency_level: 3 // Default proficiency level
     }));
@@ -272,6 +287,7 @@ const populateFormWithAiData = (aiData: any) => {
 // Add new item to array
 const addEducation = () => {
   formData.educations.push({
+    id: null,
     school: '',
     degree: '',
     field_of_study: '',
@@ -285,6 +301,7 @@ const addEducation = () => {
 
 const addExperience = () => {
   formData.experiences.push({
+    id: null,
     title: '',
     company: '',
     location: '',
@@ -299,6 +316,7 @@ const addExperience = () => {
 
 const addLicense = () => {
   formData.licenses_and_certifications.push({
+    id: null,
     name: '',
     issuing_organization: '',
     issue_date: '',
@@ -310,6 +328,7 @@ const addLicense = () => {
 
 const addProject = () => {
   formData.projects.push({
+    id: null,
     name: '',
     description: '',
     start_date: '',
@@ -321,6 +340,7 @@ const addProject = () => {
 
 const addSkill = () => {
   formData.skills.push({
+    id: null,
     name: '',
     proficiency_level: 3
   });

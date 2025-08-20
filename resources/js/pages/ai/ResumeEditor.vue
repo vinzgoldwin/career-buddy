@@ -12,11 +12,11 @@ import { CollapsibleTrigger } from '@/components/ui/collapsible'
 import { notifySuccess, notifyError } from '@/lib/notify'
 import { Link as LinkIcon, Calendar, GraduationCap, Briefcase, User as UserIcon, Globe, Mail, Folder, CheckCircle2, ChevronDown, ChevronRight, Award, ListChecks } from 'lucide-vue-next'
 
-interface Education { school: string; degree: string; field_of_study: string; start_date: string; end_date: string; currently_studying: boolean; grade: string; activities: string }
-interface Experience { title: string; company: string; location: string; start_date: string; end_date: string; currently_working: boolean; employment_type_id: number | null; industry: string; description: string }
-interface LicenseAndCertification { name: string; issuing_organization: string; issue_date: string; expiration_date: string; credential_id: string; credential_url: string }
-interface Project { name: string; description: string; start_date: string; end_date: string; url: string; skills_used: string }
-interface Skill { name: string; proficiency_level: number }
+interface Education { id: number | null; school: string; degree: string; field_of_study: string; start_date: string; end_date: string; currently_studying: boolean; grade: string; activities: string }
+interface Experience { id: number | null; title: string; company: string; location: string; start_date: string; end_date: string; currently_working: boolean; employment_type_id: number | null; industry: string; description: string }
+interface LicenseAndCertification { id: number | null; name: string; issuing_organization: string; issue_date: string; expiration_date: string; credential_id: string; credential_url: string }
+interface Project { id: number | null; name: string; description: string; start_date: string; end_date: string; url: string; skills_used: string }
+interface Skill { id: number | null; name: string; proficiency_level: number }
 
 interface PrefillData { name: string; location: string; email: string; website: string; summary: string; educations: Education[]; experiences: Experience[]; licenses_and_certifications: LicenseAndCertification[]; projects: Project[]; skills: Skill[] }
 
@@ -47,19 +47,19 @@ const formData = reactive<FormData>({
   // Initialize arrays from prefillData (fallback to one blank row like the main builder)
   educations: prefillData.educations && prefillData.educations.length > 0
     ? prefillData.educations
-    : [{ school: '', degree: '', field_of_study: '', start_date: '', end_date: '', currently_studying: false, grade: '', activities: '' }],
+    : [{ id: null, school: '', degree: '', field_of_study: '', start_date: '', end_date: '', currently_studying: false, grade: '', activities: '' }],
   experiences: prefillData.experiences && prefillData.experiences.length > 0
     ? prefillData.experiences
-    : [{ title: '', company: '', location: '', start_date: '', end_date: '', currently_working: false, employment_type_id: null, industry: '', description: '' }],
+    : [{ id: null, title: '', company: '', location: '', start_date: '', end_date: '', currently_working: false, employment_type_id: null, industry: '', description: '' }],
   licenses_and_certifications: prefillData.licenses_and_certifications && prefillData.licenses_and_certifications.length > 0
     ? prefillData.licenses_and_certifications
-    : [{ name: '', issuing_organization: '', issue_date: '', expiration_date: '', credential_id: '', credential_url: '' }],
+    : [{ id: null, name: '', issuing_organization: '', issue_date: '', expiration_date: '', credential_id: '', credential_url: '' }],
   projects: prefillData.projects && prefillData.projects.length > 0
     ? prefillData.projects
-    : [{ name: '', description: '', start_date: '', end_date: '', url: '', skills_used: '' }],
+    : [{ id: null, name: '', description: '', start_date: '', end_date: '', url: '', skills_used: '' }],
   skills: prefillData.skills && prefillData.skills.length > 0
     ? prefillData.skills
-    : [{ name: '', proficiency_level: 3 }],
+    : [{ id: null, name: '', proficiency_level: 3 }],
 })
 
 // If AI parsed data exists, populate form similarly to the main builder
@@ -71,6 +71,7 @@ const populateFormWithAiData = (aiData: any) => {
 
   if (aiData.educations && aiData.educations.length > 0) {
     formData.educations = aiData.educations.map((edu: any) => ({
+      id: null,
       school: edu.school || '',
       degree: edu.degree || '',
       field_of_study: edu.field_of_study || '',
@@ -84,6 +85,7 @@ const populateFormWithAiData = (aiData: any) => {
 
   if (aiData.experiences && aiData.experiences.length > 0) {
     formData.experiences = aiData.experiences.map((exp: any) => ({
+      id: null,
       title: exp.title || '',
       company: exp.company || '',
       location: exp.location || '',
@@ -98,6 +100,7 @@ const populateFormWithAiData = (aiData: any) => {
 
   if (aiData.license_and_certifications && aiData.license_and_certifications.length > 0) {
     formData.licenses_and_certifications = aiData.license_and_certifications.map((license: any) => ({
+      id: null,
       name: license.name || '',
       issuing_organization: license.issuing_organization || '',
       issue_date: license.issue_date || '',
@@ -109,6 +112,7 @@ const populateFormWithAiData = (aiData: any) => {
 
   if (aiData.projects && aiData.projects.length > 0) {
     formData.projects = aiData.projects.map((project: any) => ({
+      id: null,
       name: project.name || '',
       description: project.description || '',
       start_date: project.start_date || '',
@@ -120,6 +124,7 @@ const populateFormWithAiData = (aiData: any) => {
 
   if (aiData.skills && aiData.skills.length > 0) {
     formData.skills = aiData.skills.map((skill: string) => ({
+      id: null,
       name: skill,
       proficiency_level: 3
     }))
@@ -154,15 +159,15 @@ const sections = [
   { id: 'skills', label: 'Skills' },
 ]
 
-const addEducation = () => formData.educations.push({ school: '', degree: '', field_of_study: '', start_date: '', end_date: '', currently_studying: false, grade: '', activities: '' })
+const addEducation = () => formData.educations.push({ id: null, school: '', degree: '', field_of_study: '', start_date: '', end_date: '', currently_studying: false, grade: '', activities: '' })
 const removeEducation = (i: number) => formData.educations.splice(i, 1)
-const addExperience = () => formData.experiences.push({ title: '', company: '', location: '', start_date: '', end_date: '', currently_working: false, employment_type_id: null, industry: '', description: '' })
+const addExperience = () => formData.experiences.push({ id: null, title: '', company: '', location: '', start_date: '', end_date: '', currently_working: false, employment_type_id: null, industry: '', description: '' })
 const removeExperience = (i: number) => formData.experiences.splice(i, 1)
-const addProject = () => formData.projects.push({ name: '', description: '', start_date: '', end_date: '', url: '', skills_used: '' })
+const addProject = () => formData.projects.push({ id: null, name: '', description: '', start_date: '', end_date: '', url: '', skills_used: '' })
 const removeProject = (i: number) => formData.projects.splice(i, 1)
-const addLicense = () => formData.licenses_and_certifications.push({ name: '', issuing_organization: '', issue_date: '', expiration_date: '', credential_id: '', credential_url: '' })
+const addLicense = () => formData.licenses_and_certifications.push({ id: null, name: '', issuing_organization: '', issue_date: '', expiration_date: '', credential_id: '', credential_url: '' })
 const removeLicense = (i: number) => formData.licenses_and_certifications.splice(i, 1)
-const addSkill = () => formData.skills.push({ name: '', proficiency_level: 3 })
+const addSkill = () => formData.skills.push({ id: null, name: '', proficiency_level: 3 })
 const removeSkill = (i: number) => formData.skills.splice(i, 1)
 
 const submitForm = () => {

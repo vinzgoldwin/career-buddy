@@ -30,6 +30,7 @@ class ResumeStoreRequest extends FormRequest
 
             // Education rules
             'educations' => ['array'],
+            'educations.*.id' => ['nullable', 'integer', 'exists:education,id'],
             'educations.*.school' => ['nullable', 'string', 'max:255'],
             'educations.*.degree' => ['nullable', 'string', 'max:255'],
             'educations.*.field_of_study' => ['nullable', 'string', 'max:255'],
@@ -41,6 +42,7 @@ class ResumeStoreRequest extends FormRequest
 
             // Experience rules
             'experiences' => ['array'],
+            'experiences.*.id' => ['nullable', 'integer', 'exists:experiences,id'],
             'experiences.*.title' => ['nullable', 'string', 'max:255'],
             'experiences.*.company' => ['nullable', 'string', 'max:255'],
             'experiences.*.location' => ['nullable', 'string', 'max:255'],
@@ -53,6 +55,7 @@ class ResumeStoreRequest extends FormRequest
 
             // Licenses and certifications rules
             'licenses_and_certifications' => ['array'],
+            'licenses_and_certifications.*.id' => ['nullable', 'integer', 'exists:license_and_certifications,id'],
             'licenses_and_certifications.*.name' => ['nullable', 'string', 'max:255'],
             'licenses_and_certifications.*.issuing_organization' => ['string', 'max:255'],
             'licenses_and_certifications.*.issue_date' => ['nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\/\d{4}$/'],
@@ -62,6 +65,7 @@ class ResumeStoreRequest extends FormRequest
 
             // Projects rules
             'projects' => ['array'],
+            'projects.*.id' => ['nullable', 'integer', 'exists:projects,id'],
             'projects.*.name' => ['nullable', 'string', 'max:255'],
             'projects.*.description' => ['nullable', 'string', 'max:5000'],
             'projects.*.start_date' => ['nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\/\d{4}$/'],
@@ -71,6 +75,7 @@ class ResumeStoreRequest extends FormRequest
 
             // Skills rules
             'skills' => ['array'],
+            'skills.*.id' => ['nullable', 'integer', 'exists:skills,id'],
             'skills.*.name' => ['nullable', 'string', 'max:100'],
             'skills.*.proficiency_level' => ['nullable', 'integer', 'min:1', 'max:5'],
         ];

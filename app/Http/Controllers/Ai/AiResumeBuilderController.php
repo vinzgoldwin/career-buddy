@@ -54,6 +54,7 @@ class AiResumeBuilderController extends Controller
                 'summary' => $user->summary,
                 'educations' => $user->education->map(function ($education) {
                     return [
+                        'id' => $education->id,
                         'school' => $education->school,
                         'degree' => $education->degree,
                         'field_of_study' => $education->field_of_study,
@@ -63,10 +64,11 @@ class AiResumeBuilderController extends Controller
                         'grade' => $education->grade,
                         'activities' => $education->activities,
                     ];
-                })->toArray() ?: [['school' => '', 'degree' => '', 'field_of_study' => '', 'start_date' => '', 'end_date' => '', 'currently_studying' => false, 'grade' => '', 'activities' => '']],
+                })->toArray() ?: [['id' => null, 'school' => '', 'degree' => '', 'field_of_study' => '', 'start_date' => '', 'end_date' => '', 'currently_studying' => false, 'grade' => '', 'activities' => '']],
 
                 'experiences' => $user->experiences->map(function ($experience) {
                     return [
+                        'id' => $experience->id,
                         'title' => $experience->title,
                         'company' => $experience->company,
                         'location' => $experience->location,
@@ -77,10 +79,11 @@ class AiResumeBuilderController extends Controller
                         'industry' => $experience->industry,
                         'description' => $experience->description,
                     ];
-                })->toArray() ?: [['title' => '', 'company' => '', 'location' => '', 'start_date' => '', 'end_date' => '', 'currently_working' => false, 'employment_type_id' => null, 'industry' => '', 'description' => '']],
+                })->toArray() ?: [['id' => null, 'title' => '', 'company' => '', 'location' => '', 'start_date' => '', 'end_date' => '', 'currently_working' => false, 'employment_type_id' => null, 'industry' => '', 'description' => '']],
 
                 'licenses_and_certifications' => $user->licensesAndCertifications->map(function ($license) {
                     return [
+                        'id' => $license->id,
                         'name' => $license->name,
                         'issuing_organization' => $license->issuing_organization,
                         'issue_date' => $this->convertDateToMonthYear($license->issue_date ? $license->issue_date->format('Y-m-d') : null),
@@ -88,10 +91,11 @@ class AiResumeBuilderController extends Controller
                         'credential_id' => $license->credential_id,
                         'credential_url' => $license->credential_url,
                     ];
-                })->toArray() ?: [['name' => '', 'issuing_organization' => '', 'issue_date' => '', 'expiration_date' => '', 'credential_id' => '', 'credential_url' => '']],
+                })->toArray() ?: [['id' => null, 'name' => '', 'issuing_organization' => '', 'issue_date' => '', 'expiration_date' => '', 'credential_id' => '', 'credential_url' => '']],
 
                 'projects' => $user->projects->map(function ($project) {
                     return [
+                        'id' => $project->id,
                         'name' => $project->name,
                         'description' => $project->description,
                         'start_date' => $this->convertDateToMonthYear($project->start_date ? $project->start_date->format('Y-m-d') : null),
@@ -99,14 +103,15 @@ class AiResumeBuilderController extends Controller
                         'url' => $project->url,
                         'skills_used' => $project->skills_used,
                     ];
-                })->toArray() ?: [['name' => '', 'description' => '', 'start_date' => '', 'end_date' => '', 'url' => '', 'skills_used' => '']],
+                })->toArray() ?: [['id' => null, 'name' => '', 'description' => '', 'start_date' => '', 'end_date' => '', 'url' => '', 'skills_used' => '']],
 
                 'skills' => $user->skills->map(function ($skill) {
                     return [
+                        'id' => $skill->id,
                         'name' => $skill->name,
                         'proficiency_level' => $skill->proficiency_level,
                     ];
-                })->toArray() ?: [['name' => '', 'proficiency_level' => 3]],
+                })->toArray() ?: [['id' => null, 'name' => '', 'proficiency_level' => 3]],
             ],
         ]);
     }
@@ -141,6 +146,7 @@ class AiResumeBuilderController extends Controller
                 'summary' => $user->summary,
                 'educations' => $user->education->map(function ($education) {
                     return [
+                        'id' => $education->id,
                         'school' => $education->school,
                         'degree' => $education->degree,
                         'field_of_study' => $education->field_of_study,
@@ -150,10 +156,11 @@ class AiResumeBuilderController extends Controller
                         'grade' => $education->grade,
                         'activities' => $education->activities,
                     ];
-                })->toArray() ?: [['school' => '', 'degree' => '', 'field_of_study' => '', 'start_date' => '', 'end_date' => '', 'currently_studying' => false, 'grade' => '', 'activities' => '']],
+                })->toArray() ?: [['id' => null, 'school' => '', 'degree' => '', 'field_of_study' => '', 'start_date' => '', 'end_date' => '', 'currently_studying' => false, 'grade' => '', 'activities' => '']],
 
                 'experiences' => $user->experiences->map(function ($experience) {
                     return [
+                        'id' => $experience->id,
                         'title' => $experience->title,
                         'company' => $experience->company,
                         'location' => $experience->location,
@@ -164,10 +171,11 @@ class AiResumeBuilderController extends Controller
                         'industry' => $experience->industry,
                         'description' => $experience->description,
                     ];
-                })->toArray() ?: [['title' => '', 'company' => '', 'location' => '', 'start_date' => '', 'end_date' => '', 'currently_working' => false, 'employment_type_id' => null, 'industry' => '', 'description' => '']],
+                })->toArray() ?: [['id' => null, 'title' => '', 'company' => '', 'location' => '', 'start_date' => '', 'end_date' => '', 'currently_working' => false, 'employment_type_id' => null, 'industry' => '', 'description' => '']],
 
                 'licenses_and_certifications' => $user->licensesAndCertifications->map(function ($license) {
                     return [
+                        'id' => $license->id,
                         'name' => $license->name,
                         'issuing_organization' => $license->issuing_organization,
                         'issue_date' => $this->convertDateToMonthYear($license->issue_date ? $license->issue_date->format('Y-m-d') : null),
@@ -175,10 +183,11 @@ class AiResumeBuilderController extends Controller
                         'credential_id' => $license->credential_id,
                         'credential_url' => $license->credential_url,
                     ];
-                })->toArray() ?: [['name' => '', 'issuing_organization' => '', 'issue_date' => '', 'expiration_date' => '', 'credential_id' => '', 'credential_url' => '']],
+                })->toArray() ?: [['id' => null, 'name' => '', 'issuing_organization' => '', 'issue_date' => '', 'expiration_date' => '', 'credential_id' => '', 'credential_url' => '']],
 
                 'projects' => $user->projects->map(function ($project) {
                     return [
+                        'id' => $project->id,
                         'name' => $project->name,
                         'description' => $project->description,
                         'start_date' => $this->convertDateToMonthYear($project->start_date ? $project->start_date->format('Y-m-d') : null),
@@ -186,14 +195,15 @@ class AiResumeBuilderController extends Controller
                         'url' => $project->url,
                         'skills_used' => $project->skills_used,
                     ];
-                })->toArray() ?: [['name' => '', 'description' => '', 'start_date' => '', 'end_date' => '', 'url' => '', 'skills_used' => '']],
+                })->toArray() ?: [['id' => null, 'name' => '', 'description' => '', 'start_date' => '', 'end_date' => '', 'url' => '', 'skills_used' => '']],
 
                 'skills' => $user->skills->map(function ($skill) {
                     return [
+                        'id' => $skill->id,
                         'name' => $skill->name,
                         'proficiency_level' => $skill->proficiency_level,
                     ];
-                })->toArray() ?: [['name' => '', 'proficiency_level' => 3]],
+                })->toArray() ?: [['id' => null, 'name' => '', 'proficiency_level' => 3]],
             ],
         ]);
     }
@@ -218,15 +228,15 @@ class AiResumeBuilderController extends Controller
 
         // Process educations
         if (isset($validated['educations'])) {
+            $educationIds = [];
             foreach ($validated['educations'] as $education) {
-                if (! empty(array_filter($education))) {
-                    $user->education()->updateOrCreate(
+                $data = collect($education)->except('id')->filter(fn($v) => $v !== null && $v !== '');
+                if ($data->isNotEmpty()) {
+                    $model = $user->education()->updateOrCreate(
+                        ['id' => $education['id'] ?? null],
                         [
-                            'user_id' => $user->id,
                             'school' => $education['school'] ?? null,
                             'degree' => $education['degree'] ?? null,
-                        ],
-                        [
                             'field_of_study' => $education['field_of_study'] ?? null,
                             'start_date' => $this->convertMonthYearToDate($education['start_date'] ?? null),
                             'end_date' => $this->convertMonthYearToDate($education['end_date'] ?? null),
@@ -235,21 +245,27 @@ class AiResumeBuilderController extends Controller
                             'activities' => $education['activities'] ?? null,
                         ]
                     );
+                    $educationIds[] = $model->id;
                 }
+            }
+            if (empty($educationIds)) {
+                $user->education()->delete();
+            } else {
+                $user->education()->whereNotIn('id', $educationIds)->delete();
             }
         }
 
         // Process experiences
         if (isset($validated['experiences'])) {
+            $experienceIds = [];
             foreach ($validated['experiences'] as $experience) {
-                if (! empty(array_filter($experience))) {
-                    $user->experiences()->updateOrCreate(
+                $data = collect($experience)->except('id')->filter(fn($v) => $v !== null && $v !== '');
+                if ($data->isNotEmpty()) {
+                    $model = $user->experiences()->updateOrCreate(
+                        ['id' => $experience['id'] ?? null],
                         [
-                            'user_id' => $user->id,
                             'title' => $experience['title'] ?? null,
                             'company' => $experience['company'] ?? null,
-                        ],
-                        [
                             'location' => $experience['location'] ?? null,
                             'start_date' => $this->convertMonthYearToDate($experience['start_date'] ?? null),
                             'end_date' => $this->convertMonthYearToDate($experience['end_date'] ?? null),
@@ -259,41 +275,53 @@ class AiResumeBuilderController extends Controller
                             'description' => $experience['description'] ?? null,
                         ]
                     );
+                    $experienceIds[] = $model->id;
                 }
+            }
+            if (empty($experienceIds)) {
+                $user->experiences()->delete();
+            } else {
+                $user->experiences()->whereNotIn('id', $experienceIds)->delete();
             }
         }
 
         // Process licenses and certifications
         if (isset($validated['licenses_and_certifications'])) {
+            $licenseIds = [];
             foreach ($validated['licenses_and_certifications'] as $license) {
-                if (! empty(array_filter($license))) {
-                    $user->licensesAndCertifications()->updateOrCreate(
+                $data = collect($license)->except('id')->filter(fn($v) => $v !== null && $v !== '');
+                if ($data->isNotEmpty()) {
+                    $model = $user->licensesAndCertifications()->updateOrCreate(
+                        ['id' => $license['id'] ?? null],
                         [
-                            'user_id' => $user->id,
                             'name' => $license['name'] ?? null,
                             'issuing_organization' => $license['issuing_organization'] ?? null,
-                        ],
-                        [
                             'issue_date' => $this->convertMonthYearToDate($license['issue_date'] ?? null),
                             'expiration_date' => $this->convertMonthYearToDate($license['expiration_date'] ?? null),
                             'credential_id' => $license['credential_id'] ?? null,
                             'credential_url' => $license['credential_url'] ?? null,
                         ]
                     );
+                    $licenseIds[] = $model->id;
                 }
+            }
+            if (empty($licenseIds)) {
+                $user->licensesAndCertifications()->delete();
+            } else {
+                $user->licensesAndCertifications()->whereNotIn('id', $licenseIds)->delete();
             }
         }
 
         // Process projects
         if (isset($validated['projects'])) {
+            $projectIds = [];
             foreach ($validated['projects'] as $project) {
-                if (! empty(array_filter($project))) {
-                    $user->projects()->updateOrCreate(
+                $data = collect($project)->except('id')->filter(fn($v) => $v !== null && $v !== '');
+                if ($data->isNotEmpty()) {
+                    $model = $user->projects()->updateOrCreate(
+                        ['id' => $project['id'] ?? null],
                         [
-                            'user_id' => $user->id,
                             'name' => $project['name'] ?? null,
-                        ],
-                        [
                             'description' => $project['description'] ?? null,
                             'start_date' => $this->convertMonthYearToDate($project['start_date'] ?? null),
                             'end_date' => $this->convertMonthYearToDate($project['end_date'] ?? null),
@@ -301,24 +329,36 @@ class AiResumeBuilderController extends Controller
                             'skills_used' => $project['skills_used'] ?? null,
                         ]
                     );
+                    $projectIds[] = $model->id;
                 }
+            }
+            if (empty($projectIds)) {
+                $user->projects()->delete();
+            } else {
+                $user->projects()->whereNotIn('id', $projectIds)->delete();
             }
         }
 
         // Process skills
         if (isset($validated['skills'])) {
+            $skillIds = [];
             foreach ($validated['skills'] as $skill) {
-                if (! empty($skill['name'])) {
-                    $user->skills()->updateOrCreate(
+                $data = collect($skill)->except('id')->filter(fn($v) => $v !== null && $v !== '');
+                if ($data->isNotEmpty()) {
+                    $model = $user->skills()->updateOrCreate(
+                        ['id' => $skill['id'] ?? null],
                         [
-                            'user_id' => $user->id,
-                            'name' => $skill['name'],
-                        ],
-                        [
+                            'name' => $skill['name'] ?? null,
                             'proficiency_level' => $skill['proficiency_level'] ?? 3,
                         ]
                     );
+                    $skillIds[] = $model->id;
                 }
+            }
+            if (empty($skillIds)) {
+                $user->skills()->delete();
+            } else {
+                $user->skills()->whereNotIn('id', $skillIds)->delete();
             }
         }
 
