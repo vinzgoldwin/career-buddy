@@ -59,32 +59,50 @@ class JobDescriptionParserService
         $schema = json_encode($this->defaultStructure(), JSON_UNESCAPED_SLASHES);
 
         return <<<PROMPT
-You are an information extraction system. Convert the following job posting text into a STRICT JSON object
-matching exactly the schema below (all keys must exist; use "" for missing strings, [] for arrays, and null for unknown numbers).
-Do not add or remove keys. Output EXACT JSON only, wrapped in <structured_json> tags.
+            You are an extraction engine. Convert the job posting below into a STRICT JSON object that matches the schema EXACTLY.
+            All keys must exist. Use "" for missing strings, [] for arrays, and null for unknown numbers.
+            Output ONLY JSON wrapped in <structured_json> tags. Output MUST be MINIFIED (one line, no spaces or newlines).
 
-Language rule:
-- If the posting is primarily Indonesian, write strings in Indonesian; otherwise, write in English.
+            Language:
+            - If the posting is primarily Indonesian, write strings in Indonesian; otherwise English.
 
-Allowed values:
-- role.seniority: ["Entry","Junior","Mid","Senior","Lead","Principal","Staff","Head","Director","VP"] or null
-- work_mode: ["Remote","Hybrid","Onsite"] or null
-- employment_type: ["Full time","Part time","Contract","Fixed term","Permanent","Internship","Temporary","Freelance","Project based","B2B","Apprentice","Graduate"] or null
+            Allowed enums (use null if not explicitly present):
+            - seniority: ["Entry","Junior","Mid","Senior","Lead","Principal","Staff","Head","Director","VP"]
+            - work_mode: ["Remote","Hybrid","Onsite"]
+            - employment_type: ["Full time","Part time","Contract","Fixed term","Permanent","Internship","Temporary","Freelance","Project based","B2B","Apprentice","Graduate"]
 
-Schema:
-$schema
+            Hard rules (no guessing):
+            - Do NOT infer seniority from years; only set if explicitly stated in the text. Else null.
+            - Do NOT infer employment_type unless explicitly stated. Else null.
+            - work_mode only if clearly present ("Remote","Hybrid","On-site/Onsite","WFH","WFO"). Map: "WFH" => "Remote" if fully remote; "WFH most of the time with some in-person" => "Hybrid"; "WFO/On-site" => "Onsite". If unclear, null.
+            - location: set only if explicitly stated (city/region/country). If absent, null.
+            - company_name: prefer the actual employer; if a recruiter post says "on behalf of <X>", use X. If no employer is clear, use the posting entity name or leave "".
 
-Job posting (plain text; may include noise/HTML):
-<job_text>
-{$jobText}
-</job_text>
+            Content shaping:
+            - summary: 1 short neutral sentence, plain text, <= 280 chars, no emojis/symbols.
+            - responsibilities: up to 12 concise bullets, each a single clause. Ignore culture/perks.
+            - requirements: up to 12 concise bullets from qualifications/requirements.
+            - skills: up to 20 unique TECH tokens (1–3 words each). No sentences. No soft skills. Case-sensitive tech names.
+              Canonicalize common variants: "Node.js","React.js","Next.js","Vue.js",".NET","CI/CD","AWS","GCP","Azure","Elasticsearch","Datadog","TDD","Unit testing".
+              Deduplicate case-insensitively.
+            - years_experience_min/max: integers or null. If only "5+ years" => min=5, max=null. If a range "3–5 years" => min=3, max=5.
 
-Rules:
-- Strings must be plain text (no HTML).
-- Arrays are arrays of strings.
-- Use integers for years_experience_min/max or null if unknown.
-- Output only the JSON wrapped in <structured_json>...</structured_json>.
-PROMPT;
+            Formatting constraints:
+            - Plain ASCII quotes (").
+            - Valid JSON only. No trailing commas. No markdown. No extra keys or fields.
+            - Keep the output MINIFIED (no spaces/newlines).
+
+            Schema:
+            $schema
+
+            Job posting (plain text; may include noise/HTML):
+            <job_text>
+            {$jobText}
+            </job_text>
+
+            Return only:
+            <structured_json>{...}</structured_json>
+        PROMPT;
     }
 
     /* =========================
@@ -186,7 +204,6 @@ PROMPT;
         $out['company_name']   = $this->toString($out['company_name']);
         $out['location']       = $this->nullableString($out['location']);
         $out['summary']        = $this->toString($out['summary']);
-        $out['compensation_text'] = $this->toString($out['compensation_text']);
 
         // Arrays of strings
         $out['responsibilities'] = $this->stringArray($out['responsibilities']);
@@ -332,7 +349,6 @@ PROMPT;
             'skills'               => [],
             'years_experience_min' => null,
             'years_experience_max' => null,
-            'compensation_text'    => '',
         ];
     }
 }

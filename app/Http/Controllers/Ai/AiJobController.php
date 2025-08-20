@@ -15,6 +15,7 @@ class AiJobController extends Controller
         JobDescriptionParserService $parser,
         ProfileJsonService $profileService
     ) {
+        set_time_limit(150);
         $raw = (string) $request->input('raw');
 
         $job = $parser->parse($raw);
