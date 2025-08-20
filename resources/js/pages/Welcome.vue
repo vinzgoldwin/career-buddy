@@ -43,20 +43,7 @@ const features = [
         >
           Home
         </Link>
-        <template v-else>
-          <Link
-            :href="route('login')"
-            class="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal hover:border-sidebar-border/70 dark:hover:border-sidebar-border"
-          >
-            Log in
-          </Link>
-          <Link
-            :href="route('register')"
-            class="inline-block rounded-sm border border-sidebar-border/70 px-5 py-1.5 text-sm leading-normal hover:bg-muted/40 dark:border-sidebar-border"
-          >
-            Register
-          </Link>
-        </template>
+
       </nav>
     </header>
 

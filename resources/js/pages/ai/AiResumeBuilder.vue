@@ -90,51 +90,6 @@ interface PrefillData {
   skills: Skill[];
 }
 
-// Define the structure of the AI parsed data
-interface AiParsedData {
-  name: string;
-  location: string;
-  description: string;
-  headline: string;
-  languages: string[];
-  educations: Array<{
-    start_date: string;
-    end_date: string;
-    school: string;
-    degree: string;
-    description: string;
-    grade: string;
-    field_of_study: string;
-  }>;
-  experiences: Array<{
-    start_date: string;
-    end_date: string | null;
-    company: string;
-    title: string;
-    description: string;
-    location: string;
-    currently_working: boolean;
-    employment_type: string;
-  }>;
-  skills: string[];
-  license_and_certifications: Array<{
-    name: string;
-    issuing_organization: string;
-    issue_date: string;
-    expiration_date: string;
-    credential_id: string;
-    credential_url: string;
-  }>;
-  projects: Array<{
-    name: string;
-    description: string;
-    start_date: string;
-    end_date: string | null;
-    url: string | null;
-    skills_used: string[];
-  }>;
-}
-
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'AI Resume Builder',

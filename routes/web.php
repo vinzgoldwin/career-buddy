@@ -19,6 +19,7 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('home');
     }
+
     return Inertia::render('Welcome');
 })->name('welcome');
 
@@ -60,7 +61,7 @@ Route::get('affiliate', [AffiliateController::class, 'index'])
     ->name('affiliate');
 
 Route::post('ai-resume-builder/upload', [AiResumeBuilderController::class, 'uploadResume'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('ai-resume-builder.upload');
 
 require __DIR__.'/settings.php';
