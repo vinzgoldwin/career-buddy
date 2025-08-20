@@ -6,7 +6,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
-use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,12 +15,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
-        
+
         $middleware->validateCsrfTokens(except: [
             'pdf/extract-text',
+            'ai-resume-builder',
             'ai-resume-builder/upload',
         ]);
-        
+
         // Add specific CSRF exception for DELETE requests to settings/profile
         $middleware->web(append: [
             HandleAppearance::class,
