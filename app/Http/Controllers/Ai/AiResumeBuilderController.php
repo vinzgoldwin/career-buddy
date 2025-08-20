@@ -330,7 +330,7 @@ class AiResumeBuilderController extends Controller
         set_time_limit(150);
 
         $request->validate([
-            'resume' => 'required|file|mimes:pdf|max:10240', // Max 10MB
+            'resume' => 'required|file|mimes:pdf|max:10240',
         ]);
 
         try {

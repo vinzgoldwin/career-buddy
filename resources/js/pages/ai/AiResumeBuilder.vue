@@ -1077,7 +1077,7 @@ onUnmounted(() => {
                             </Button>
                             <Button type="button" variant="ghost" class="bg-primary-gradient text-white hover:opacity-90" @click="submitForm">
                                 <Sparkles class="mr-2 h-4 w-4" />
-                                Create AI-Powered Resume
+                                Save
                             </Button>
                           </template>
                 </FullscreenDialog>

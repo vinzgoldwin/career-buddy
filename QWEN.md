@@ -45,6 +45,17 @@
 - When testing database operations, always use transactions that can be rolled back or work with test databases.
 - If you need to demonstrate database operations that modify data, always warn the user and confirm before proceeding.
 
+### Testing Database Safety (Strict)
+- Tests MUST run against the test environment only. Use `.env.testing` and never `.env`.
+- Default to the in-memory/isolated test DB: `APP_ENV=testing`, `DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:` (as configured in `.env.testing`).
+- Use Laravel testing traits to isolate state:
+  - Prefer `RefreshDatabase` (recommended) or `DatabaseTransactions` in tests.
+  - Do not disable transactions or share state across tests.
+- Never point tests at production or development databases. If a test, script, or tool detects a non-testing connection, abort and report instead of running.
+- When invoking `php artisan test`, ensure the testing environment is active. If needed, pass `--env=testing` explicitly.
+- Do not run destructive CLI commands (migrate:fresh, db:wipe, seed) outside the testing environment. If required in tests, they must target the testing database only.
+- Do not use `tinker` or ad-hoc write queries against the real database during tests. For debugging, use factories and test transactions within the test environment.
+
 
 === inertia-laravel/core rules ===
 
