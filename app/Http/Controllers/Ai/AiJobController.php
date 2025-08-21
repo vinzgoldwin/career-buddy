@@ -20,7 +20,6 @@ class AiJobController extends Controller
 
         $job = $parser->parse($raw);
         $profile = $profileService->buildForUser(Auth::user());
-        dd($job);
 
         // Non-Inertia requests (API/tests): return JSON
         if (! $request->header('X-Inertia')) {

@@ -2,6 +2,8 @@
 
 namespace App\Services\Job;
 
+use App\Models\JobDescription;
+use Illuminate\Support\Arr;
 use OpenAI\Laravel\Facades\OpenAI;
 
 class JobDescriptionParserService
@@ -47,6 +49,63 @@ class JobDescriptionParserService
             'usage'  => $resp['usage'] ?? null,
             'model'  => $resp['model'] ?? $model,
         ];
+    }
+
+    /**
+     * Parse with LLM and persist result for later reuse.
+     * Returns [model: JobDescription, data: array, errors: array, raw: string, usage: array|null, llm_model: string|null]
+     */
+    public function parseAndStore(string $raw, ?int $userId = null): array
+    {
+        $result = $this->parse($raw);
+        $model = $this->storeNormalized(
+            $result['data'] ?? [],
+            $raw,
+            $userId,
+            [
+                'llm_output_raw' => $result['raw'] ?? null,
+                'errors' => $result['errors'] ?? [],
+                'usage'  => $result['usage'] ?? null,
+                'llm_model' => $result['model'] ?? null,
+            ]
+        );
+
+        return [
+            'model' => $model,
+            'data' => $result['data'] ?? [],
+            'errors' => $result['errors'] ?? [],
+            'raw' => $result['raw'] ?? null,
+            'usage' => $result['usage'] ?? null,
+            'llm_model' => $result['model'] ?? null,
+        ];
+    }
+
+    /**
+     * Persist a normalized job description without calling the LLM.
+     * Useful for tests and for saving edited job postings.
+     */
+    public function storeNormalized(array $normalized, string $rawInput, ?int $userId = null, array $meta = []): JobDescription
+    {
+        return JobDescription::create([
+            'user_id' => $userId,
+            'title' => Arr::get($normalized, 'title'),
+            'seniority' => Arr::get($normalized, 'seniority'),
+            'company_name' => Arr::get($normalized, 'company_name'),
+            'work_mode' => Arr::get($normalized, 'work_mode'),
+            'location' => Arr::get($normalized, 'location'),
+            'employment_type' => Arr::get($normalized, 'employment_type'),
+            'summary' => Arr::get($normalized, 'summary'),
+            'responsibilities' => Arr::get($normalized, 'responsibilities', []),
+            'requirements' => Arr::get($normalized, 'requirements', []),
+            'skills' => Arr::get($normalized, 'skills', []),
+            'years_experience_min' => Arr::get($normalized, 'years_experience_min'),
+            'years_experience_max' => Arr::get($normalized, 'years_experience_max'),
+            'raw_input' => $rawInput,
+            'llm_output_raw' => $meta['llm_output_raw'] ?? null,
+            'errors' => $meta['errors'] ?? null,
+            'usage' => $meta['usage'] ?? null,
+            'llm_model' => $meta['llm_model'] ?? null,
+        ]);
     }
 
     /* =========================
