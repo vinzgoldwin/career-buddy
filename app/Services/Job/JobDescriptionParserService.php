@@ -13,15 +13,15 @@ class JobDescriptionParserService
      */
     public function parse(string $raw): array
     {
-        $prompt    = $this->createJobParsingPrompt($raw);
-        $model     = config('ai.models.job_parsing', 'openai/gpt-oss-20b');
+        $prompt = $this->createJobParsingPrompt($raw);
+        $model = config('ai.models.job_parsing', 'openai/gpt-oss-20b');
         $maxTokens = (int) config('ai.tokens.job_parsing', 2500);
 
         $resp = OpenAI::chat()->create([
-            'model'       => $model,
+            'model' => $model,
             'temperature' => 0,
-            'max_tokens'  => $maxTokens,
-            'messages'    => [
+            'max_tokens' => $maxTokens,
+            'messages' => [
                 ['role' => 'user', 'content' => $prompt],
             ],
         ])->toArray();
@@ -32,22 +32,22 @@ class JobDescriptionParserService
 
         if ($json === null) {
             return [
-                'data'   => $this->defaultStructure(),
+                'data' => $this->defaultStructure(),
                 'errors' => array_merge(['Failed to decode model JSON.'], $errors),
-                'raw'    => $rawContent,
-                'usage'  => $resp['usage'] ?? null,
-                'model'  => $resp['model'] ?? $model,
+                'raw' => $rawContent,
+                'usage' => $resp['usage'] ?? null,
+                'model' => $resp['model'] ?? $model,
             ];
         }
 
         $normalized = $this->normalize($json);
 
         return [
-            'data'   => $normalized,
+            'data' => $normalized,
             'errors' => $errors,
-            'raw'    => $rawContent,
-            'usage'  => $resp['usage'] ?? null,
-            'model'  => $resp['model'] ?? $model,
+            'raw' => $rawContent,
+            'usage' => $resp['usage'] ?? null,
+            'model' => $resp['model'] ?? $model,
         ];
     }
 
@@ -65,7 +65,7 @@ class JobDescriptionParserService
             [
                 'llm_output_raw' => $result['raw'] ?? null,
                 'errors' => $result['errors'] ?? [],
-                'usage'  => $result['usage'] ?? null,
+                'usage' => $result['usage'] ?? null,
                 'llm_model' => $result['model'] ?? null,
             ]
         );
@@ -179,12 +179,16 @@ class JobDescriptionParserService
         if (preg_match('/<structured_json>(.*?)<\/structured_json>/is', $content, $m)) {
             $candidate = trim($m[1]);
             $decoded = $this->jsonDecodeSafe($candidate, $errors);
-            if (is_array($decoded)) return [$decoded, $errors];
+            if (is_array($decoded)) {
+                return [$decoded, $errors];
+            }
 
             $errors[] = 'Tagged JSON failed; attempting repair.';
             $candidate = $this->attemptRepair($candidate);
             $decoded = $this->jsonDecodeSafe($candidate, $errors);
-            if (is_array($decoded)) return [$decoded, $errors];
+            if (is_array($decoded)) {
+                return [$decoded, $errors];
+            }
         } else {
             $errors[] = 'Missing <structured_json> tags.';
         }
@@ -193,12 +197,16 @@ class JobDescriptionParserService
         if (preg_match('/\{.*\}/s', $content, $m2)) {
             $candidate = trim($m2[0]);
             $decoded = $this->jsonDecodeSafe($candidate, $errors);
-            if (is_array($decoded)) return [$decoded, $errors];
+            if (is_array($decoded)) {
+                return [$decoded, $errors];
+            }
 
             $errors[] = 'Untagged JSON failed; attempting repair.';
             $candidate = $this->attemptRepair($candidate);
             $decoded = $this->jsonDecodeSafe($candidate, $errors);
-            if (is_array($decoded)) return [$decoded, $errors];
+            if (is_array($decoded)) {
+                return [$decoded, $errors];
+            }
         }
 
         return [null, $errors];
@@ -210,13 +218,16 @@ class JobDescriptionParserService
         $json = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $json) ?? $json;
         $decoded = json_decode($json, true, 512, JSON_BIGINT_AS_STRING);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $errors[] = 'json_decode error: ' . json_last_error_msg();
+            $errors[] = 'json_decode error: '.json_last_error_msg();
+
             return null;
         }
-        if (!is_array($decoded)) {
+        if (! is_array($decoded)) {
             $errors[] = 'Decoded JSON is not an object.';
+
             return null;
         }
+
         return $decoded;
     }
 
@@ -226,10 +237,13 @@ class JobDescriptionParserService
         // Remove trailing commas
         $s = preg_replace('/,(\s*[}\]])/', '$1', $s) ?? $s;
         // Replace single quotes if object looks JSON-ish with single quotes
-        if (preg_match('/[{\[]\s*\'/', $s)) $s = preg_replace('/\'/', '"', $s) ?? $s;
+        if (preg_match('/[{\[]\s*\'/', $s)) {
+            $s = preg_replace('/\'/', '"', $s) ?? $s;
+        }
         // Strip NBSP and trailing whitespace
         $s = str_replace("\xC2\xA0", ' ', $s);
         $s = preg_replace('/\s+$/', '', $s) ?? $s;
+
         return $s;
     }
 
@@ -241,6 +255,7 @@ class JobDescriptionParserService
             "\xE2\x80\x98" => "'", // ‘
             "\xE2\x80\x99" => "'", // ’
         ];
+
         return strtr($s, $map);
     }
 
@@ -250,24 +265,23 @@ class JobDescriptionParserService
 
     private function normalize(array $data): array
     {
-        $base = $this->defaultStructure();
-        $out  = $this->deepMerge($base, $data);
+        $out = $this->overlay($this->defaultStructure(), $data);
 
         // Canonicalize enums
-        $out['seniority']       = $this->canonSeniority($out['seniority']);
-        $out['work_mode']       = $this->canonWorkMode($out['work_mode']);
+        $out['seniority'] = $this->canonSeniority($out['seniority']);
+        $out['work_mode'] = $this->canonWorkMode($out['work_mode']);
         $out['employment_type'] = $this->canonEmploymentType($out['employment_type']);
 
         // Coerce primitives
-        $out['title']          = $this->toString($out['title']);
-        $out['company_name']   = $this->toString($out['company_name']);
-        $out['location']       = $this->nullableString($out['location']);
-        $out['summary']        = $this->toString($out['summary']);
+        $out['title'] = $this->toString($out['title']);
+        $out['company_name'] = $this->toString($out['company_name']);
+        $out['location'] = $this->nullableString($out['location']);
+        $out['summary'] = $this->toString($out['summary']);
 
         // Arrays of strings
         $out['responsibilities'] = $this->stringArray($out['responsibilities']);
-        $out['requirements']     = $this->stringArray($out['requirements']);
-        $out['skills']           = $this->stringArrayDedupCaseInsensitive($out['skills']);
+        $out['requirements'] = $this->stringArray($out['requirements']);
+        $out['skills'] = $this->stringArrayDedupCaseInsensitive($out['skills']);
 
         // Years
         $out['years_experience_min'] = $this->nullableInt($out['years_experience_min']);
@@ -284,94 +298,124 @@ class JobDescriptionParserService
         return $out;
     }
 
-    private function deepMerge(array $base, array $incoming): array
+    private function overlay(array $base, array $incoming): array
     {
-        foreach ($incoming as $k => $v) {
-            if (array_key_exists($k, $base)) {
-                if (is_array($base[$k]) && is_array($v)) {
-                    $base[$k] = $this->deepMerge($base[$k], $v);
-                } else {
-                    $base[$k] = $v;
-                }
+        foreach ($base as $k => $_) {
+            if (array_key_exists($k, $incoming)) {
+                $base[$k] = $incoming[$k];
             }
         }
+
         return $base;
     }
 
     private function canonSeniority($v): ?string
     {
-        if (!is_string($v) || $v === '') return null;
+        if (! is_string($v) || $v === '') {
+            return null;
+        }
         $k = strtolower(preg_replace('/[\s\-\.]/', '', $v));
         $map = [
-            'entry'=>'Entry','entrylevel'=>'Entry',
-            'junior'=>'Junior','jr'=>'Junior','jr'=>'Junior',
-            'mid'=>'Mid','midlevel'=>'Mid',
-            'senior'=>'Senior','sr'=>'Senior','sr'=>'Senior',
-            'lead'=>'Lead','principal'=>'Principal','staff'=>'Staff',
-            'head'=>'Head','director'=>'Director','vp'=>'VP','vicepresident'=>'VP',
+            'entry' => 'Entry', 'entrylevel' => 'Entry',
+            'junior' => 'Junior', 'jr' => 'Junior', 'jr' => 'Junior',
+            'mid' => 'Mid', 'midlevel' => 'Mid',
+            'senior' => 'Senior', 'sr' => 'Senior', 'sr' => 'Senior',
+            'lead' => 'Lead', 'principal' => 'Principal', 'staff' => 'Staff',
+            'head' => 'Head', 'director' => 'Director', 'vp' => 'VP', 'vicepresident' => 'VP',
         ];
+
         return $map[$k] ?? null;
     }
 
     private function canonWorkMode($v): ?string
     {
-        if (!is_string($v) || $v === '') return null;
+        if (! is_string($v) || $v === '') {
+            return null;
+        }
         $k = strtolower(str_replace(['-', ' '], '', $v));
-        if (in_array($k, ['remote'])) return 'Remote';
-        if (in_array($k, ['hybrid'])) return 'Hybrid';
-        if (in_array($k, ['onsite','onsite','on-site','wfo'])) return 'Onsite';
+        if (in_array($k, ['remote'])) {
+            return 'Remote';
+        }
+        if (in_array($k, ['hybrid'])) {
+            return 'Hybrid';
+        }
+        if (in_array($k, ['onsite', 'onsite', 'on-site', 'wfo'])) {
+            return 'Onsite';
+        }
+
         return null;
     }
 
     private function canonEmploymentType($v): ?string
     {
-        if (!is_string($v) || $v === '') return null;
+        if (! is_string($v) || $v === '') {
+            return null;
+        }
         $k = strtolower(str_replace(['-', ' '], '', $v));
         $map = [
-            'fulltime'=>'Full time','fulltime.'=>'Full time','fulltime,'=>'Full time',
-            'parttime'=>'Part time',
-            'contract'=>'Contract','contractor'=>'Contract',
-            'fixedterm'=>'Fixed term',
-            'permanent'=>'Permanent',
-            'internship'=>'Internship','intern'=>'Internship',
-            'temporary'=>'Temporary',
-            'freelance'=>'Freelance',
-            'projectbased'=>'Project based',
-            'b2b'=>'B2B',
-            'apprentice'=>'Apprentice','apprenticeship'=>'Apprentice',
-            'graduate'=>'Graduate','graduateprogram'=>'Graduate',
+            'fulltime' => 'Full time', 'fulltime.' => 'Full time', 'fulltime,' => 'Full time',
+            'parttime' => 'Part time',
+            'contract' => 'Contract', 'contractor' => 'Contract',
+            'fixedterm' => 'Fixed term',
+            'permanent' => 'Permanent',
+            'internship' => 'Internship', 'intern' => 'Internship',
+            'temporary' => 'Temporary',
+            'freelance' => 'Freelance',
+            'projectbased' => 'Project based',
+            'b2b' => 'B2B',
+            'apprentice' => 'Apprentice', 'apprenticeship' => 'Apprentice',
+            'graduate' => 'Graduate', 'graduateprogram' => 'Graduate',
         ];
+
         return $map[$k] ?? null;
     }
 
     private function toString($v): string
     {
-        if (is_string($v)) return trim($v);
-        if (is_array($v))  return trim(implode(' ', array_map([$this,'toString'],$v)));
-        if ($v === null)   return '';
-        return trim((string)$v);
+        if (is_string($v)) {
+            return trim($v);
+        }
+        if (is_array($v)) {
+            return trim(implode(' ', array_map([$this, 'toString'], $v)));
+        }
+        if ($v === null) {
+            return '';
+        }
+
+        return trim((string) $v);
     }
 
     private function nullableString($v): ?string
     {
         $s = $this->toString($v);
+
         return $s === '' ? null : $s;
     }
 
     private function nullableInt($v): ?int
     {
-        if ($v === null || $v === '') return null;
-        if (is_numeric($v)) return (int)$v;
+        if ($v === null || $v === '') {
+            return null;
+        }
+        if (is_numeric($v)) {
+            return (int) $v;
+        }
         // Loose parse like "3 years"
-        if (preg_match('/\d+/', (string)$v, $m)) return (int)$m[0];
+        if (preg_match('/\d+/', (string) $v, $m)) {
+            return (int) $m[0];
+        }
+
         return null;
     }
 
     private function stringArray($v): array
     {
-        if (!is_array($v)) $v = ($v === null || $v === '') ? [] : [(string)$v];
-        $v = array_map(fn($x) => $this->toString($x), $v);
-        $v = array_values(array_filter($v, fn($x) => $x !== ''));
+        if (! is_array($v)) {
+            $v = ($v === null || $v === '') ? [] : [(string) $v];
+        }
+        $v = array_map(fn ($x) => $this->toString($x), $v);
+        $v = array_values(array_filter($v, fn ($x) => $x !== ''));
+
         return $v;
     }
 
@@ -379,13 +423,16 @@ class JobDescriptionParserService
     {
         $arr = $this->stringArray($v);
         $seen = [];
-        $out  = [];
+        $out = [];
         foreach ($arr as $s) {
             $k = mb_strtolower($s);
-            if (isset($seen[$k])) continue;
+            if (isset($seen[$k])) {
+                continue;
+            }
             $seen[$k] = true;
             $out[] = $s;
         }
+
         return $out;
     }
 
@@ -396,16 +443,16 @@ class JobDescriptionParserService
     private function defaultStructure(): array
     {
         return [
-            'title'                => '',
-            'seniority'            => null,
-            'company_name'         => '',
-            'work_mode'            => null,    // Remote | Hybrid | Onsite | null
-            'location'             => null,
-            'employment_type'      => null,    // canonicalized set or null
-            'summary'              => '',
-            'responsibilities'     => [],
-            'requirements'         => [],
-            'skills'               => [],
+            'title' => '',
+            'seniority' => null,
+            'company_name' => '',
+            'work_mode' => null,    // Remote | Hybrid | Onsite | null
+            'location' => null,
+            'employment_type' => null,    // canonicalized set or null
+            'summary' => '',
+            'responsibilities' => [],
+            'requirements' => [],
+            'skills' => [],
             'years_experience_min' => null,
             'years_experience_max' => null,
         ];

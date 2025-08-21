@@ -3,7 +3,6 @@
 namespace App\Services\Profile;
 
 use App\Models\User;
-use Illuminate\Contracts\Support\Arrayable;
 
 class ProfileJsonService
 {
@@ -39,6 +38,7 @@ class ProfileJsonService
 
             'educations' => $model->education->map(function ($education) {
                 return [
+                    'id' => $education->id,
                     'school' => $education->school,
                     'degree' => $education->degree,
                     'field_of_study' => $education->field_of_study,
@@ -53,6 +53,7 @@ class ProfileJsonService
 
             'experiences' => $model->experiences->map(function ($experience) {
                 return [
+                    'id' => $experience->id,
                     'title' => $experience->title,
                     'company' => $experience->company,
                     'location' => $experience->location,
@@ -67,6 +68,7 @@ class ProfileJsonService
 
             'licenses_and_certifications' => $model->licensesAndCertifications->map(function ($license) {
                 return [
+                    'id' => $license->id,
                     'name' => $license->name,
                     'issuing_organization' => $license->issuing_organization,
                     'issue_date' => $this->toMonthYear($license->issue_date?->format('Y-m-d')),
@@ -79,6 +81,7 @@ class ProfileJsonService
 
             'projects' => $model->projects->map(function ($project) {
                 return [
+                    'id' => $project->id,
                     'name' => $project->name,
                     'description' => $project->description,
                     'start_date' => $this->toMonthYear($project->start_date?->format('Y-m-d')),
@@ -111,4 +114,3 @@ class ProfileJsonService
         return $date;
     }
 }
-

@@ -6,6 +6,7 @@ use App\Http\Controllers\Ai\AiJobController;
 use App\Http\Controllers\Ai\AiResumeBuilderController;
 use App\Http\Controllers\Ai\InterviewQuestionBankController;
 use App\Http\Controllers\Ai\MockInterviewController;
+use App\Http\Controllers\Ai\ProfileEvaluationController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\PdfController;
 use Illuminate\Support\Facades\Auth;
@@ -68,6 +69,10 @@ Route::post('ai-resume-builder/upload', [AiResumeBuilderController::class, 'uplo
 Route::post('ai-resume-builder/parse-job', [AiJobController::class, 'parse'])
     ->middleware(['auth', 'verified'])
     ->name('ai-resume-builder.parse-job');
+
+Route::get('ai-evaluation/{evaluation}', [ProfileEvaluationController::class, 'show'])
+    ->middleware(['auth', 'verified'])
+    ->name('ai-evaluation.show');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
