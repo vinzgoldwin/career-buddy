@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { CheckCircle2, ChevronLeft, Sparkles } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { cn } from '@/lib/utils';
 
 const page: any = usePage();
 const evaluation = page.props.evaluation || {};
@@ -62,6 +64,29 @@ const skillsAndTraitsScore = computed(() => skillsAndTraits.value.reduce((sum, r
 const alignmentScore = computed(() => alignment.value.reduce((sum, row) => sum + (row.score ?? 0), 0));
 
 const specificChanges = computed(() => (Array.isArray(evaluation.specific_changes) ? evaluation.specific_changes : []));
+
+function formatField(field: string) {
+    if (field === 'licenses_and_certifications') {
+        return 'Licenses and Certifications';
+    }
+    return field
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+function fieldBadgeClass(field: string) {
+    const colors: Record<string, string> = {
+        licenses_and_certifications: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-700/20 dark:text-indigo-300',
+        skills: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-700/20 dark:text-emerald-300',
+        experiences: 'bg-blue-100 text-blue-700 dark:bg-blue-700/20 dark:text-blue-300',
+        education: 'bg-amber-100 text-amber-700 dark:bg-amber-700/20 dark:text-amber-300',
+        summary: 'bg-purple-100 text-purple-700 dark:bg-purple-700/20 dark:text-purple-300',
+        projects: 'bg-pink-100 text-pink-700 dark:bg-pink-700/20 dark:text-pink-300',
+    };
+    return cn('border-transparent', colors[field] || 'bg-muted text-muted-foreground');
+}
 </script>
 
 <template>
@@ -220,8 +245,12 @@ const specificChanges = computed(() => (Array.isArray(evaluation.specific_change
             </thead>
             <tbody>
               <tr v-for="(c, i) in specificChanges" :key="i" class="border-t">
-                <td class="py-2 pr-4">{{ c.field }}</td>
-                <td class="py-2 pr-4 whitespace-pre-line">{{ c.old_value }}</td>
+                  <td class="py-2 pr-4">
+                      <Badge variant="outline" :class="fieldBadgeClass(c.field)">
+                          {{ formatField(c.field) }}
+                      </Badge>
+                  </td>
+                  <td class="py-2 pr-4 whitespace-pre-line">{{ c.old_value }}</td>
                 <td class="py-2 pr-4 whitespace-pre-line">{{ c.new_value }}</td>
               </tr>
             </tbody>
