@@ -99,7 +99,7 @@ class ProfileEvaluationController extends Controller
         $specificChangesData = $evaluation->specificChanges->map(function ($change) {
             return [
                 'field' => $change->field,
-                'id' => $change->entity_id,
+                'entity_id' => $change->entity_id,
                 'specific_field' => $change->specific_field,
                 'old_value' => $this->formatChangeValue($change->old_value),
                 'new_value' => $this->formatChangeValue($change->new_value),
@@ -126,26 +126,20 @@ class ProfileEvaluationController extends Controller
 
     private function formatChangeValue($value): string
     {
-        $decoded = is_string($value) ? json_decode($value, true) : $value;
-
-        if (is_array($decoded)) {
-            if (array_is_list($decoded)) {
-                if (isset($decoded[0]) && is_array($decoded[0]) && array_key_exists('name', $decoded[0])) {
-                    return collect($decoded)->pluck('name')->implode(', ');
-                }
-
-                return implode(', ', $decoded);
-            }
-
-            if (array_key_exists('name', $decoded)) {
-                return $decoded['name'];
-            }
-
-            return json_encode($decoded);
+        if (!is_string($value)) {
+            return (string) $value;
         }
 
-        return (string) $value;
+        if (str_contains($value, ',')) {
+            return collect(explode(',', $value))
+                ->map(fn ($item) => trim($item))
+                ->filter()
+                ->implode(', ');
+        }
+
+        return trim($value);
     }
+
 
     private function authorizeView(ProfileEvaluation $evaluation): void
     {
