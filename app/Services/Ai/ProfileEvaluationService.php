@@ -188,7 +188,7 @@ class ProfileEvaluationService
             {{JOB_JSON}}
             </job_json>
 
-            3. Carefully analyze the provided profile data. Pay attention to the following sections: summary, skills (array of {name, proficiency_level}), experiences, education, projects, and certifications. Focus your evaluation on explicit, job‑relevant information; do not guess or assume.
+            3. Carefully analyze the provided profile data. Pay attention to the following sections: summary, `skills` is an array of strings (e.g., ["PHP","Laravel",...]), experiences, education, projects, and certifications. Focus your evaluation on explicit, job‑relevant information; do not guess or assume.
 
             4. Evaluate the profile based on the following criteria:
 

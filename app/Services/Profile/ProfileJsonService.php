@@ -92,10 +92,7 @@ class ProfileJsonService
             })->values()->all(),
 
             'skills' => $model->skills->map(function ($skill) {
-                return [
-                    'name' => $skill->name,
-                    'proficiency_level' => $skill->proficiency_level,
-                ];
+                return $skill->name;
             })->values()->all(),
         ];
     }
