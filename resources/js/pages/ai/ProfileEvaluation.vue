@@ -126,12 +126,12 @@ const specificChanges = computed(() => Array.isArray(evaluation.specific_changes
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <div class="text-sm text-muted-foreground mb-1">Recommendation</div>
-            <p class="text-sm whitespace-pre-line">{{ evaluation.overall?.recommendation || '—' }}</p>
+            <div class="text-sm text-muted-foreground mb-1">Strengths</div>
+            <p class="text-sm whitespace-pre-line">{{ evaluation.overall?.strengths || '—' }}</p>
           </div>
           <div>
-            <div class="text-sm text-muted-foreground mb-1">Improvements</div>
-            <p class="text-sm whitespace-pre-line">{{ evaluation.overall?.improvements || '—' }}</p>
+            <div class="text-sm text-muted-foreground mb-1">Areas for Improvement</div>
+            <p class="text-sm whitespace-pre-line">{{ evaluation.overall?.area_for_improvement || '—' }}</p>
           </div>
         </div>
       </div>
@@ -144,8 +144,6 @@ const specificChanges = computed(() => Array.isArray(evaluation.specific_changes
             <thead>
               <tr class="text-left text-muted-foreground">
                 <th class="py-2 pr-4">Field</th>
-                <th class="py-2 pr-4">ID</th>
-                <th class="py-2 pr-4">Specific Field</th>
                 <th class="py-2 pr-4">Old Value</th>
                 <th class="py-2 pr-4">New Value</th>
               </tr>
@@ -153,8 +151,6 @@ const specificChanges = computed(() => Array.isArray(evaluation.specific_changes
             <tbody>
               <tr v-for="(c, i) in specificChanges" :key="i" class="border-t">
                 <td class="py-2 pr-4">{{ c.field }}</td>
-                <td class="py-2 pr-4">{{ c.id }}</td>
-                <td class="py-2 pr-4">{{ c.specific_field }}</td>
                 <td class="py-2 pr-4 whitespace-pre-line">{{ c.old_value }}</td>
                 <td class="py-2 pr-4 whitespace-pre-line">{{ c.new_value }}</td>
               </tr>

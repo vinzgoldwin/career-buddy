@@ -106,7 +106,6 @@ class ProfileEvaluationControllerTest extends TestCase
         $response->assertStatus(200);
         
         // Check that the response contains the expected data
-        $response->assertSee('Good candidate');
         $response->assertSee('Strong skills');
         $response->assertSee('Need more experience');
     }

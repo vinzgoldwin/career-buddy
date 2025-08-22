@@ -101,8 +101,8 @@ class ProfileEvaluationController extends Controller
                 'field' => $change->field,
                 'id' => $change->entity_id,
                 'specific_field' => $change->specific_field,
-                'old_value' => $change->old_value,
-                'new_value' => $change->new_value,
+                'old_value' => $this->formatChangeValue($change->old_value),
+                'new_value' => $this->formatChangeValue($change->new_value),
             ];
         })->toArray();
 
@@ -114,16 +114,37 @@ class ProfileEvaluationController extends Controller
                 'skills_and_traits' => $skillsAndTraitsData,
                 'alignment_with_job' => $alignmentWithData,
                 'overall' => [
-                    'recommendation' => $evaluation->overall_recommendation,
-                    'improvements' => $evaluation->improvements,
                     'strengths' => $evaluation->strengths,
-                    'areas_for_improvement' => $evaluation->areas_for_improvement,
+                    'area_for_improvement' => $evaluation->areas_for_improvement,
                 ],
                 'specific_changes' => $specificChangesData,
             ],
             'job' => $jobNormalized,
             'profile' => $profile,
         ]);
+    }
+
+    private function formatChangeValue($value): string
+    {
+        $decoded = is_string($value) ? json_decode($value, true) : $value;
+
+        if (is_array($decoded)) {
+            if (array_is_list($decoded)) {
+                if (isset($decoded[0]) && is_array($decoded[0]) && array_key_exists('name', $decoded[0])) {
+                    return collect($decoded)->pluck('name')->implode(', ');
+                }
+
+                return implode(', ', $decoded);
+            }
+
+            if (array_key_exists('name', $decoded)) {
+                return $decoded['name'];
+            }
+
+            return json_encode($decoded);
+        }
+
+        return (string) $value;
     }
 
     private function authorizeView(ProfileEvaluation $evaluation): void
