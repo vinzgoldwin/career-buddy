@@ -14,6 +14,9 @@ class ProfileEvaluationController extends Controller
     {
         $this->authorizeView($evaluation);
 
+        // Load the related models
+        $evaluation->load(['impact', 'skillsAndTraits', 'alignmentWithJob', 'specificChanges']);
+
         $job = $evaluation->jobDescription;
         $profile = $profileService->buildForUser(Auth::user());
 
@@ -32,18 +35,91 @@ class ProfileEvaluationController extends Controller
             'years_experience_max' => $job->years_experience_max,
         ] : null;
 
+        // Prepare the impact data
+        $impactData = $evaluation->impact ? [
+            'quantifying_impact' => [
+                'score' => $evaluation->impact->quantifying_impact_score,
+                'feedback' => $evaluation->impact->quantifying_impact_feedback,
+            ],
+            'focus_on_achievements' => [
+                'score' => $evaluation->impact->focus_on_achievements_score,
+                'feedback' => $evaluation->impact->focus_on_achievements_feedback,
+            ],
+            'writing_quality' => [
+                'score' => $evaluation->impact->writing_quality_score,
+                'feedback' => $evaluation->impact->writing_quality_feedback,
+            ],
+            'varied_industry_specific_verbs' => [
+                'score' => $evaluation->impact->varied_industry_specific_verbs_score,
+                'feedback' => $evaluation->impact->varied_industry_specific_verbs_feedback,
+            ],
+        ] : [];
+
+        // Prepare the skills and traits data
+        $skillsAndTraitsData = $evaluation->skillsAndTraits ? [
+            'problem_solving' => [
+                'score' => $evaluation->skillsAndTraits->problem_solving_score,
+                'feedback' => $evaluation->skillsAndTraits->problem_solving_feedback,
+            ],
+            'communication_collaboration' => [
+                'score' => $evaluation->skillsAndTraits->communication_collaboration_score,
+                'feedback' => $evaluation->skillsAndTraits->communication_collaboration_feedback,
+            ],
+            'initiative_innovation' => [
+                'score' => $evaluation->skillsAndTraits->initiative_innovation_score,
+                'feedback' => $evaluation->skillsAndTraits->initiative_innovation_feedback,
+            ],
+            'leadership_teamwork' => [
+                'score' => $evaluation->skillsAndTraits->leadership_teamwork_score,
+                'feedback' => $evaluation->skillsAndTraits->leadership_teamwork_feedback,
+            ],
+        ] : [];
+
+        // Prepare the alignment with job data
+        $alignmentWithData = $evaluation->alignmentWithJob ? [
+            'skills_match' => [
+                'score' => $evaluation->alignmentWithJob->skills_match_score,
+                'feedback' => $evaluation->alignmentWithJob->skills_match_feedback,
+            ],
+            'job_title_match' => [
+                'score' => $evaluation->alignmentWithJob->job_title_match_score,
+                'feedback' => $evaluation->alignmentWithJob->job_title_match_feedback,
+            ],
+            'responsibilities_qualifications' => [
+                'score' => $evaluation->alignmentWithJob->responsibilities_qualifications_score,
+                'feedback' => $evaluation->alignmentWithJob->responsibilities_qualifications_feedback,
+            ],
+            'industry_keywords_synonyms' => [
+                'score' => $evaluation->alignmentWithJob->industry_keywords_synonyms_score,
+                'feedback' => $evaluation->alignmentWithJob->industry_keywords_synonyms_feedback,
+            ],
+        ] : [];
+
+        // Prepare the specific changes data
+        $specificChangesData = $evaluation->specificChanges->map(function ($change) {
+            return [
+                'field' => $change->field,
+                'id' => $change->entity_id,
+                'specific_field' => $change->specific_field,
+                'old_value' => $change->old_value,
+                'new_value' => $change->new_value,
+            ];
+        })->toArray();
+
         return Inertia::render('ai/ProfileEvaluation', [
             'evaluation' => [
                 'id' => $evaluation->id,
                 'total_score' => $evaluation->total_score,
-                'impact' => $evaluation->impact ?? [],
-                'skills_and_traits' => $evaluation->skills_and_traits ?? [],
-                'alignment_with_job' => $evaluation->alignment_with_job ?? [],
+                'impact' => $impactData,
+                'skills_and_traits' => $skillsAndTraitsData,
+                'alignment_with_job' => $alignmentWithData,
                 'overall' => [
                     'recommendation' => $evaluation->overall_recommendation,
                     'improvements' => $evaluation->improvements,
+                    'strengths' => $evaluation->strengths,
+                    'areas_for_improvement' => $evaluation->areas_for_improvement,
                 ],
-                'specific_changes' => $evaluation->specific_changes ?? [],
+                'specific_changes' => $specificChangesData,
             ],
             'job' => $jobNormalized,
             'profile' => $profile,

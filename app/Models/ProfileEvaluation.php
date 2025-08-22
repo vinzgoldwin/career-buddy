@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProfileEvaluation extends Model
 {
@@ -14,12 +16,10 @@ class ProfileEvaluation extends Model
         'user_id',
         'job_description_id',
         'total_score',
-        'impact',
-        'skills_and_traits',
-        'alignment_with_job',
         'overall_recommendation',
         'improvements',
-        'specific_changes',
+        'strengths',
+        'areas_for_improvement',
         'raw_output',
         'errors',
         'usage',
@@ -29,10 +29,6 @@ class ProfileEvaluation extends Model
     protected function casts(): array
     {
         return [
-            'impact' => 'array',
-            'skills_and_traits' => 'array',
-            'alignment_with_job' => 'array',
-            'specific_changes' => 'array',
             'errors' => 'array',
             'usage' => 'array',
             'total_score' => 'integer',
@@ -47,5 +43,25 @@ class ProfileEvaluation extends Model
     public function jobDescription(): BelongsTo
     {
         return $this->belongsTo(JobDescription::class);
+    }
+
+    public function impact(): HasOne
+    {
+        return $this->hasOne(ProfileEvaluationImpact::class);
+    }
+
+    public function skillsAndTraits(): HasOne
+    {
+        return $this->hasOne(ProfileEvaluationSkillsAndTraits::class);
+    }
+
+    public function alignmentWithJob(): HasOne
+    {
+        return $this->hasOne(ProfileEvaluationAlignmentWithJob::class);
+    }
+
+    public function specificChanges(): HasMany
+    {
+        return $this->hasMany(ProfileEvaluationSpecificChange::class);
     }
 }

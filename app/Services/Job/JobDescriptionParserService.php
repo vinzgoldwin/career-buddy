@@ -15,7 +15,7 @@ class JobDescriptionParserService
     {
         $prompt = $this->createJobParsingPrompt($raw);
         $model = config('ai.models.job_parsing', 'openai/gpt-oss-20b');
-        $maxTokens = (int) config('ai.tokens.job_parsing', 2500);
+        $maxTokens = (int) config('ai.tokens.job_parsing', 5000);
 
         $resp = OpenAI::chat()->create([
             'model' => $model,

@@ -55,7 +55,12 @@
 - When invoking `php artisan test`, ensure the testing environment is active. If needed, pass `--env=testing` explicitly.
 - Do not run destructive CLI commands (migrate:fresh, db:wipe, seed) outside the testing environment. If required in tests, they must target the testing database only.
 - Do not use `tinker` or ad-hoc write queries against the real database during tests. For debugging, use factories and test transactions within the test environment.
-
+- Before running any test that modifies the database, ALWAYS verify that the current database connection is the testing database. If not, abort the test and warn the user.
+- To verify you're using the testing database, check that:
+  - `APP_ENV` is set to `testing`
+  - `DB_CONNECTION` is set to `sqlite`  
+  - `DB_DATABASE` is set to `:memory:` or contains `testing`
+  - You can verify this with: `php artisan test --env=testing`
 
 === inertia-laravel/core rules ===
 
@@ -132,7 +137,7 @@ Route::get('/users', function () {
 - When creating models for tests, use the factories for the models. Check if the factory has custom states that can be used before manually setting up the model.
 - Faker: Use methods such as `$this->faker->word()` or `fake()->randomDigit()`. Follow existing conventions whether to use `$this->faker` or `fake()`.
 - When creating tests, make use of `php artisan make:test [options] <name>` to create a feature test, and pass `--unit` to create a unit test. Most tests should be feature tests.
-- Use PHP 8 attributes instead of doc-comment annotations for test methods. Replace `/** @test */` with `#[\PHPUnit\Framework\Attributes\Test]` to ensure compatibility with PHPUnit 12 and later versions.
+- Use PHP 8 attributes instead of doc-comment annotations for test methods. Replace `/** <!-- Import failed: test - ENOENT: no such file or directory, access '/Users/vinzgoldwin/Projects/career-buddy/test' --> */` with `#[\PHPUnit\Framework\Attributes\Test]` to ensure compatibility with PHPUnit 12 and later versions.
 
 ### Vite Error
 - If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `npm run build` or ask the user to run `npm run dev` or `composer run dev`.
@@ -189,7 +194,7 @@ it('is true', function () {
 
 ### PHP 8 Attributes for Test Methods
 - Use PHP 8 attributes instead of doc-comment annotations for test methods to ensure compatibility with PHPUnit 12.
-- Replace `/** @test */` annotations with `#[\PHPUnit\Framework\Attributes\Test]` attributes.
+- Replace `/** <!-- Import failed: test - ENOENT: no such file or directory, access '/Users/vinzgoldwin/Projects/career-buddy/test' --> */` annotations with `#[\PHPUnit\Framework\Attributes\Test]` attributes.
 - Example:
 <code-snippet name="Test Method with PHP 8 Attribute" lang="php">
 #[\PHPUnit\Framework\Attributes\Test]
@@ -318,10 +323,10 @@ it('has emails', function (string $email) {
 - In Tailwind v4, you import Tailwind using a regular CSS `@import` statement, not using the `@tailwind` directives used in v3:
 
 <code-snippet name="Tailwind v4 Import Tailwind Diff" lang="diff"
-   - @tailwind base;
-   - @tailwind components;
-   - @tailwind utilities;
-   + @import "tailwindcss";
+   - <!-- Import failed: tailwind - ENOENT: no such file or directory, access '/Users/vinzgoldwin/Projects/career-buddy/tailwind' --> base;
+   - <!-- Import failed: tailwind - ENOENT: no such file or directory, access '/Users/vinzgoldwin/Projects/career-buddy/tailwind' --> components;
+   - <!-- Import failed: tailwind - ENOENT: no such file or directory, access '/Users/vinzgoldwin/Projects/career-buddy/tailwind' --> utilities;
+   + <!-- Import failed: import - ENOENT: no such file or directory, access '/Users/vinzgoldwin/Projects/career-buddy/import' --> "tailwindcss";
 </code-snippet>
 
 
@@ -362,5 +367,5 @@ it('has emails', function (string $email) {
 
 - Every change must be programmatically tested. Write a new test or update an existing test, then run the affected tests to make sure they pass.
 - Run the minimum number of tests needed to ensure code quality and speed. Use `php artisan test` with a specific filename or filter.
-- Use PHP 8 attributes instead of doc-comment annotations for test methods to ensure compatibility with future versions of PHPUnit. Replace `/** @test */` with `#[\PHPUnit\Framework\Attributes\Test]`.
+- Use PHP 8 attributes instead of doc-comment annotations for test methods to ensure compatibility with future versions of PHPUnit. Replace `/** <!-- Import failed: test - ENOENT: no such file or directory, access '/Users/vinzgoldwin/Projects/career-buddy/test' --> */` with `#[\PHPUnit\Framework\Attributes\Test]`.
 </laravel-boost-guidelines>
