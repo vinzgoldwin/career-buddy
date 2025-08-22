@@ -1,122 +1,168 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Head, usePage, router } from '@inertiajs/vue3'
-import { Button } from '@/components/ui/button'
-import { CheckCircle2, ChevronLeft, Sparkles } from 'lucide-vue-next'
-import { computed } from 'vue'
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { CheckCircle2, ChevronLeft, Sparkles } from 'lucide-vue-next';
+import { computed } from 'vue';
 
-const page: any = usePage()
-const evaluation = page.props.evaluation || {}
-const job = page.props.job || null
-const profile = page.props.profile || null
+const page: any = usePage();
+const evaluation = page.props.evaluation || {};
+const job = page.props.job || null;
+const profile = page.props.profile || null;
 
-const totalScore = computed(() => evaluation.total_score ?? null)
+const totalScore = computed(() => evaluation.total_score ?? null);
+
+const SECTION_MAX_SCORES = {
+    impact: 40,
+    skills_and_traits: 20,
+    alignment_with_job: 40,
+} as const;
+
+const SUBSECTION_MAX_SCORES = {
+    impact: {
+        quantifying_impact: 10,
+        focus_on_achievements: 10,
+        writing_quality: 12,
+        varied_industry_specific_verbs: 8,
+    },
+    skills_and_traits: {
+        problem_solving: 5,
+        communication_collaboration: 5,
+        initiative_innovation: 5,
+        leadership_teamwork: 5,
+    },
+    alignment_with_job: {
+        skills_match: 10,
+        job_title_match: 10,
+        responsibilities_qualifications: 10,
+        industry_keywords_synonyms: 10,
+    },
+} as const;
 
 function backToBuilder() {
-  router.visit(route('ai-resume-builder'))
+    router.visit(route('ai-resume-builder'));
 }
 
-function formatSubScores(section: Record<string, any>) {
-  if (!section) return []
-  return Object.entries(section).map(([key, val]: any) => ({
-    key,
-    score: val?.score ?? null,
-    feedback: val?.feedback ?? '',
-  }))
+function formatSubScores(section: Record<string, any>, maxScores: Record<string, number>) {
+    if (!section) return [];
+    return Object.entries(section).map(([key, val]: any) => ({
+        key,
+        score: val?.score ?? null,
+        max: maxScores[key],
+        feedback: val?.feedback ?? '',
+    }));
 }
 
-const impact = computed(() => formatSubScores(evaluation.impact))
-const skillsTraits = computed(() => formatSubScores(evaluation.skills_and_traits))
-const alignment = computed(() => formatSubScores(evaluation.alignment_with_job))
+const impact = computed(() => formatSubScores(evaluation.impact, SUBSECTION_MAX_SCORES.impact));
+const skillsAndTraits = computed(() => formatSubScores(evaluation.skills_and_traits, SUBSECTION_MAX_SCORES.skills_and_traits));
+const alignment = computed(() => formatSubScores(evaluation.alignment_with_job, SUBSECTION_MAX_SCORES.alignment_with_job));
 
-const specificChanges = computed(() => Array.isArray(evaluation.specific_changes) ? evaluation.specific_changes : [])
+const impactScore = computed(() => impact.value.reduce((sum, row) => sum + (row.score ?? 0), 0));
+const skillsAndTraitsScore = computed(() => skillsAndTraits.value.reduce((sum, row) => sum + (row.score ?? 0), 0));
+const alignmentScore = computed(() => alignment.value.reduce((sum, row) => sum + (row.score ?? 0), 0));
+
+const specificChanges = computed(() => (Array.isArray(evaluation.specific_changes) ? evaluation.specific_changes : []));
 </script>
 
 <template>
-  <Head title="Profile Evaluation" />
-  <AppLayout :breadcrumbs="[{title: 'AI Resume Builder', href: route('ai-resume-builder')}, {title: 'Evaluation', href: ''}]">
-    <div class="flex h-full flex-1 flex-col gap-6 rounded-xl p-4 md:p-6">
-      <div class="flex items-center justify-between">
-        <div class="space-y-1">
-          <h1 class="text-2xl font-bold tracking-tight">Profile Evaluation</h1>
-          <p class="text-muted-foreground">Objective evaluation based on your profile and the selected job.</p>
-        </div>
-        <div class="flex gap-2">
-          <Button variant="outline" @click="backToBuilder">
-            <ChevronLeft class="h-4 w-4 mr-2" /> Back to Builder
-          </Button>
-        </div>
-      </div>
-
-      <!-- Summary -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-sm text-muted-foreground">Overall Score</div>
-              <div class="text-3xl font-semibold">{{ totalScore ?? '—' }}</div>
+    <Head title="Profile Evaluation" />
+    <AppLayout
+        :breadcrumbs="[
+            { title: 'AI Resume Builder', href: route('ai-resume-builder') },
+            { title: 'Evaluation', href: '' },
+        ]"
+    >
+        <div class="flex h-full flex-1 flex-col gap-6 rounded-xl p-4 md:p-6">
+            <div class="flex items-center justify-between">
+                <div class="space-y-1">
+                    <h1 class="text-2xl font-bold tracking-tight">Profile Evaluation</h1>
+                    <p class="text-muted-foreground">Objective evaluation based on your profile and the selected job.</p>
+                </div>
+                <div class="flex gap-2">
+                    <Button variant="outline" @click="backToBuilder"> <ChevronLeft class="mr-2 h-4 w-4" /> Back to Builder </Button>
+                </div>
             </div>
-            <CheckCircle2 class="h-8 w-8 text-primary" />
-          </div>
-        </div>
 
-        <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5" v-if="job">
-          <div class="text-sm text-muted-foreground">Target Role</div>
-          <div class="font-medium">{{ job.title || '—' }}</div>
-          <div class="text-xs text-muted-foreground">{{ job.company_name || '' }}</div>
-        </div>
+            <!-- Summary -->
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm text-muted-foreground">Overall Score</div>
+                            <div class="text-3xl font-semibold">
+                                {{ totalScore !== null ? `${totalScore}/100` : '—' }}
+                            </div>
+                        </div>
+                        <CheckCircle2 class="h-8 w-8 text-primary" />
+                    </div>
+                </div>
 
-        <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5" v-if="profile">
-          <div class="text-sm text-muted-foreground">Profile</div>
-          <div class="font-medium">{{ profile.name }}</div>
-          <div class="text-xs text-muted-foreground">{{ profile.email }}</div>
-        </div>
-      </div>
+                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5" v-if="job">
+                    <div class="text-sm text-muted-foreground">Target Role</div>
+                    <div class="font-medium">{{ job.title || '—' }}</div>
+                    <div class="text-xs text-muted-foreground">{{ job.company_name || '' }}</div>
+                </div>
 
-      <!-- Sections -->
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1">
-          <h2 class="text-lg font-semibold mb-3">Impact</h2>
-          <div v-if="impact.length" class="space-y-4">
-            <div v-for="row in impact" :key="row.key" class="space-y-1">
-              <div class="flex items-center justify-between">
-                <div class="text-sm font-medium">{{ row.key.replaceAll('_',' ') }}</div>
-                <div class="text-sm text-muted-foreground">{{ row.score ?? '—' }}</div>
-              </div>
-              <p class="text-sm text-muted-foreground whitespace-pre-line">{{ row.feedback }}</p>
+                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5" v-if="profile">
+                    <div class="text-sm text-muted-foreground">Profile</div>
+                    <div class="font-medium">{{ profile.name }}</div>
+                    <div class="text-xs text-muted-foreground">{{ profile.email }}</div>
+                </div>
             </div>
-          </div>
-          <div v-else class="text-sm text-muted-foreground">No details provided.</div>
-        </div>
 
-        <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1">
-          <h2 class="text-lg font-semibold mb-3">Skills & Traits</h2>
-          <div v-if="skillsTraits.length" class="space-y-4">
-            <div v-for="row in skillsTraits" :key="row.key" class="space-y-1">
-              <div class="flex items-center justify-between">
-                <div class="text-sm font-medium">{{ row.key.replaceAll('_',' ') }}</div>
-                <div class="text-sm text-muted-foreground">{{ row.score ?? '—' }}</div>
-              </div>
-              <p class="text-sm text-muted-foreground whitespace-pre-line">{{ row.feedback }}</p>
-            </div>
-          </div>
-          <div v-else class="text-sm text-muted-foreground">No details provided.</div>
-        </div>
+            <!-- Sections -->
+            <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1">
+                    <div class="mb-3 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold">Impact</h2>
+                        <div class="text-sm text-muted-foreground">{{ impactScore }}/{{ SECTION_MAX_SCORES.impact }}</div>
+                    </div>
+                    <div v-if="impact.length" class="space-y-4">
+                        <div v-for="row in impact" :key="row.key" class="space-y-1">
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm font-medium">{{ row.key.replaceAll('_', ' ') }}</div>
+                                <div class="text-sm text-muted-foreground">{{ row.score ?? '—' }}/{{ row.max }}</div>
+                            </div>
+                            <p class="text-sm whitespace-pre-line text-muted-foreground">{{ row.feedback }}</p>
+                        </div>
+                    </div>
+                    <div v-else class="text-sm text-muted-foreground">No details provided.</div>
+                </div>
 
-        <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1">
-          <h2 class="text-lg font-semibold mb-3">Alignment with Job</h2>
-          <div v-if="alignment.length" class="space-y-4">
-            <div v-for="row in alignment" :key="row.key" class="space-y-1">
-              <div class="flex items-center justify-between">
-                <div class="text-sm font-medium">{{ row.key.replaceAll('_',' ') }}</div>
-                <div class="text-sm text-muted-foreground">{{ row.score ?? '—' }}</div>
-              </div>
-              <p class="text-sm text-muted-foreground whitespace-pre-line">{{ row.feedback }}</p>
+                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1">
+                    <div class="mb-3 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold">Skills & Traits</h2>
+                        <div class="text-sm text-muted-foreground">{{ skillsAndTraitsScore }}/{{ SECTION_MAX_SCORES.skills_and_traits }}</div>
+                    </div>
+                    <div v-if="skillsAndTraits.length" class="space-y-4">
+                        <div v-for="row in skillsAndTraits" :key="row.key" class="space-y-1">
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm font-medium">{{ row.key.replaceAll('_', ' ') }}</div>
+                                <div class="text-sm text-muted-foreground">{{ row.score ?? '—' }}/{{ row.max }}</div>
+                            </div>
+                            <p class="text-sm whitespace-pre-line text-muted-foreground">{{ row.feedback }}</p>
+                        </div>
+                    </div>
+                    <div v-else class="text-sm text-muted-foreground">No details provided.</div>
+                </div>
+
+                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1">
+                    <div class="mb-3 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold">Alignment with Job</h2>
+                        <div class="text-sm text-muted-foreground">{{ alignmentScore }}/{{ SECTION_MAX_SCORES.alignment_with_job }}</div>
+                    </div>
+                    <div v-if="alignment.length" class="space-y-4">
+                        <div v-for="row in alignment" :key="row.key" class="space-y-1">
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm font-medium">{{ row.key.replaceAll('_', ' ') }}</div>
+                                <div class="text-sm text-muted-foreground">{{ row.score ?? '—' }}/{{ row.max }}</div>
+                            </div>
+                            <p class="text-sm whitespace-pre-line text-muted-foreground">{{ row.feedback }}</p>
+                        </div>
+                    </div>
+                    <div v-else class="text-sm text-muted-foreground">No details provided.</div>
+                </div>
             </div>
-          </div>
-          <div v-else class="text-sm text-muted-foreground">No details provided.</div>
-        </div>
-      </div>
 
       <!-- Overall Recommendation -->
       <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5">
@@ -157,9 +203,7 @@ const specificChanges = computed(() => Array.isArray(evaluation.specific_changes
             </tbody>
           </table>
         </div>
-        <div v-else class="text-sm text-muted-foreground">No specific changes suggested.</div>
       </div>
-    </div>
-  </AppLayout>
+        </div>
+    </AppLayout>
 </template>
-
