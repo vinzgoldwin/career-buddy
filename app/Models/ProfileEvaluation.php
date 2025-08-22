@@ -16,8 +16,6 @@ class ProfileEvaluation extends Model
         'user_id',
         'job_description_id',
         'total_score',
-        'overall_recommendation',
-        'improvements',
         'strengths',
         'areas_for_improvement',
         'raw_output',

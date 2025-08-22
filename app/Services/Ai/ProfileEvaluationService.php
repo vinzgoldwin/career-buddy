@@ -38,10 +38,10 @@ class ProfileEvaluationService
         // Extract strengths and areas for improvement from the parsed data
         $strengths = null;
         $areasForImprovement = null;
-        
+
         if (isset($parsed['overall']['improvements'])) {
             $improvements = $parsed['overall']['improvements'];
-            
+
             // Extract strengths using regex
             if (preg_match('/<strengths>(.*?)<\/strengths>/is', $improvements, $strengthsMatch)) {
                 $strengths = trim($strengthsMatch[1]);
@@ -52,7 +52,7 @@ class ProfileEvaluationService
                 $strengths = preg_replace('/^[\s•\-]+/m', '', $strengths);
                 $strengths = trim($strengths);
             }
-            
+
             // Extract areas for improvement using regex
             if (preg_match('/<areas_for_improvement>(.*?)<\/areas_for_improvement>/is', $improvements, $areasMatch)) {
                 $areasForImprovement = trim($areasMatch[1]);
@@ -69,8 +69,6 @@ class ProfileEvaluationService
             'user_id' => $userId,
             'job_description_id' => $jobDescriptionId,
             'total_score' => Arr::get($parsed, 'overall.total_score'),
-            'overall_recommendation' => Arr::get($parsed, 'overall.recommendation'),
-            'improvements' => Arr::get($parsed, 'overall.improvements'),
             'strengths' => $strengths,
             'areas_for_improvement' => $areasForImprovement,
             'raw_output' => $content,
@@ -133,14 +131,14 @@ class ProfileEvaluationService
                 // Convert array values to JSON strings if needed
                 $oldValue = $change['old_value'] ?? null;
                 $newValue = $change['new_value'] ?? null;
-                
+
                 // Ensure old_value and new_value are strings
                 if (is_array($oldValue)) {
                     $oldValue = json_encode($oldValue);
                 } elseif (!is_string($oldValue) && !is_null($oldValue)) {
                     $oldValue = (string) $oldValue;
                 }
-                
+
                 if (is_array($newValue)) {
                     $newValue = json_encode($newValue);
                 } elseif (!is_string($newValue) && !is_null($newValue)) {
@@ -400,7 +398,7 @@ class ProfileEvaluationService
 
         $overallSection = $get($eval, 'overall_recommendation') ?? '';
         $overallScore = $this->toInt($get($overallSection, 'overall_score'));
-        
+
         // Extract the improvements section which contains strengths and areas for improvement
         $improvements = $get($overallSection, 'improvements');
 
