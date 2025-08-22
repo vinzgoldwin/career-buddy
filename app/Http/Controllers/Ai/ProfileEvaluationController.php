@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Ai;
 
 use App\Http\Controllers\Controller;
+use App\Models\Education;
+use App\Models\Experience;
+use App\Models\LicenseAndCertification;
 use App\Models\ProfileEvaluation;
+use App\Models\Project;
 use App\Services\Profile\ProfileJsonService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -97,10 +101,19 @@ class ProfileEvaluationController extends Controller
 
         // Prepare the specific changes data
         $specificChangesData = $evaluation->specificChanges->map(function ($change) {
+            $reference = match ($change->field) {
+                'experiences' => Experience::find($change->entity_id)?->title,
+                'projects' => Project::find($change->entity_id)?->name,
+                'education' => Education::find($change->entity_id)?->school,
+                'licenses_and_certifications' => LicenseAndCertification::find($change->entity_id)?->name,
+                default => null,
+            };
+
             return [
                 'field' => $change->field,
                 'entity_id' => $change->entity_id,
                 'specific_field' => $change->specific_field,
+                'reference' => $reference,
                 'old_value' => $this->formatChangeValue($change->old_value),
                 'new_value' => $this->formatChangeValue($change->new_value),
             ];
