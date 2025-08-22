@@ -74,7 +74,7 @@ const specificChanges = computed(() => (Array.isArray(evaluation.specific_change
     >
         <div class="flex h-full flex-1 flex-col gap-6 rounded-xl p-4 md:p-6">
             <div class="flex items-center justify-between">
-                <div class="space-y-1">
+                <div class="flex flex-col gap-1">
                     <h1 class="text-2xl font-bold tracking-tight">Profile Evaluation</h1>
                     <p class="text-muted-foreground">Objective evaluation based on your profile and the selected job.</p>
                 </div>
@@ -85,7 +85,7 @@ const specificChanges = computed(() => (Array.isArray(evaluation.specific_change
 
             <!-- Summary -->
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5">
+                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 flex flex-col gap-4">
                     <div class="flex items-center justify-between">
                         <div>
                             <div class="text-sm text-muted-foreground">Overall Score</div>
@@ -94,6 +94,12 @@ const specificChanges = computed(() => (Array.isArray(evaluation.specific_change
                             </div>
                         </div>
                         <CheckCircle2 class="h-8 w-8 text-primary" />
+                    </div>
+                    <div class="h-2 w-full rounded-full bg-muted">
+                        <div
+                            class="h-full rounded-full bg-primary"
+                            :style="{ width: totalScore !== null ? `${totalScore}%` : '0%' }"
+                        />
                     </div>
                 </div>
 
@@ -112,16 +118,22 @@ const specificChanges = computed(() => (Array.isArray(evaluation.specific_change
 
             <!-- Sections -->
             <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1">
-                    <div class="mb-3 flex items-center justify-between">
+                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1 flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
                         <h2 class="text-lg font-semibold">Impact</h2>
                         <div class="text-sm text-muted-foreground">{{ impactScore }}/{{ SECTION_MAX_SCORES.impact }}</div>
                     </div>
-                    <div v-if="impact.length" class="space-y-4">
-                        <div v-for="row in impact" :key="row.key" class="space-y-1">
+                    <div v-if="impact.length" class="flex flex-col gap-4">
+                        <div v-for="row in impact" :key="row.key" class="flex flex-col gap-2">
                             <div class="flex items-center justify-between">
                                 <div class="text-sm font-medium">{{ row.key.replaceAll('_', ' ') }}</div>
                                 <div class="text-sm text-muted-foreground">{{ row.score ?? '—' }}/{{ row.max }}</div>
+                            </div>
+                            <div class="h-2 w-full rounded-full bg-muted">
+                                <div
+                                    class="h-full rounded-full bg-primary"
+                                    :style="{ width: row.score != null ? `${(row.score / row.max) * 100}%` : '0%' }"
+                                />
                             </div>
                             <p class="text-sm whitespace-pre-line text-muted-foreground">{{ row.feedback }}</p>
                         </div>
@@ -129,16 +141,22 @@ const specificChanges = computed(() => (Array.isArray(evaluation.specific_change
                     <div v-else class="text-sm text-muted-foreground">No details provided.</div>
                 </div>
 
-                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1">
-                    <div class="mb-3 flex items-center justify-between">
+                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1 flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
                         <h2 class="text-lg font-semibold">Skills & Traits</h2>
                         <div class="text-sm text-muted-foreground">{{ skillsAndTraitsScore }}/{{ SECTION_MAX_SCORES.skills_and_traits }}</div>
                     </div>
-                    <div v-if="skillsAndTraits.length" class="space-y-4">
-                        <div v-for="row in skillsAndTraits" :key="row.key" class="space-y-1">
+                    <div v-if="skillsAndTraits.length" class="flex flex-col gap-4">
+                        <div v-for="row in skillsAndTraits" :key="row.key" class="flex flex-col gap-2">
                             <div class="flex items-center justify-between">
                                 <div class="text-sm font-medium">{{ row.key.replaceAll('_', ' ') }}</div>
                                 <div class="text-sm text-muted-foreground">{{ row.score ?? '—' }}/{{ row.max }}</div>
+                            </div>
+                            <div class="h-2 w-full rounded-full bg-muted">
+                                <div
+                                    class="h-full rounded-full bg-primary"
+                                    :style="{ width: row.score != null ? `${(row.score / row.max) * 100}%` : '0%' }"
+                                />
                             </div>
                             <p class="text-sm whitespace-pre-line text-muted-foreground">{{ row.feedback }}</p>
                         </div>
@@ -146,16 +164,22 @@ const specificChanges = computed(() => (Array.isArray(evaluation.specific_change
                     <div v-else class="text-sm text-muted-foreground">No details provided.</div>
                 </div>
 
-                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1">
-                    <div class="mb-3 flex items-center justify-between">
+                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1 flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
                         <h2 class="text-lg font-semibold">Alignment with Job</h2>
                         <div class="text-sm text-muted-foreground">{{ alignmentScore }}/{{ SECTION_MAX_SCORES.alignment_with_job }}</div>
                     </div>
-                    <div v-if="alignment.length" class="space-y-4">
-                        <div v-for="row in alignment" :key="row.key" class="space-y-1">
+                    <div v-if="alignment.length" class="flex flex-col gap-4">
+                        <div v-for="row in alignment" :key="row.key" class="flex flex-col gap-2">
                             <div class="flex items-center justify-between">
                                 <div class="text-sm font-medium">{{ row.key.replaceAll('_', ' ') }}</div>
                                 <div class="text-sm text-muted-foreground">{{ row.score ?? '—' }}/{{ row.max }}</div>
+                            </div>
+                            <div class="h-2 w-full rounded-full bg-muted">
+                                <div
+                                    class="h-full rounded-full bg-primary"
+                                    :style="{ width: row.score != null ? `${(row.score / row.max) * 100}%` : '0%' }"
+                                />
                             </div>
                             <p class="text-sm whitespace-pre-line text-muted-foreground">{{ row.feedback }}</p>
                         </div>
@@ -165,26 +189,26 @@ const specificChanges = computed(() => (Array.isArray(evaluation.specific_change
             </div>
 
       <!-- Overall Recommendation -->
-      <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5">
-        <div class="flex items-center gap-2 mb-2">
+      <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 flex flex-col gap-4">
+        <div class="flex items-center gap-2">
           <Sparkles class="h-4 w-4 text-primary" />
           <h2 class="text-lg font-semibold">Overall Recommendation</h2>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <div class="text-sm text-muted-foreground mb-1">Strengths</div>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div class="flex flex-col gap-1">
+            <div class="text-sm text-muted-foreground">Strengths</div>
             <p class="text-sm whitespace-pre-line">{{ evaluation.overall?.strengths || '—' }}</p>
           </div>
-          <div>
-            <div class="text-sm text-muted-foreground mb-1">Areas for Improvement</div>
+          <div class="flex flex-col gap-1">
+            <div class="text-sm text-muted-foreground">Areas for Improvement</div>
             <p class="text-sm whitespace-pre-line">{{ evaluation.overall?.area_for_improvement || '—' }}</p>
           </div>
         </div>
       </div>
 
       <!-- Specific Changes -->
-      <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5">
-        <h2 class="text-lg font-semibold mb-3">Specific Immediate Changes</h2>
+      <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 flex flex-col gap-3">
+        <h2 class="text-lg font-semibold">Specific Immediate Changes</h2>
         <div v-if="specificChanges.length" class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
@@ -203,6 +227,7 @@ const specificChanges = computed(() => (Array.isArray(evaluation.specific_change
             </tbody>
           </table>
         </div>
+        <div v-else class="text-sm text-muted-foreground">No specific changes.</div>
       </div>
         </div>
     </AppLayout>
