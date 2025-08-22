@@ -51,6 +51,8 @@ class ProfileEvaluationService
                 // Remove bullet points and clean up
                 $strengths = preg_replace('/^[\s•\-]+/m', '', $strengths);
                 $strengths = trim($strengths);
+                // Convert to numbered list
+                $strengths = $this->convertToNumberedList($strengths);
             }
 
             // Extract areas for improvement using regex
@@ -62,6 +64,8 @@ class ProfileEvaluationService
                 // Remove bullet points and clean up
                 $areasForImprovement = preg_replace('/^[\s•\-]+/m', '', $areasForImprovement);
                 $areasForImprovement = trim($areasForImprovement);
+                // Convert to numbered list
+                $areasForImprovement = $this->convertToNumberedList($areasForImprovement);
             }
         }
 
@@ -434,6 +438,16 @@ class ProfileEvaluationService
             ],
             'specific_changes' => $specificChanges,
         ], $errors];
+    }
+
+    private function convertToNumberedList(string $text): string
+    {
+        $lines = preg_split('/\r\n|\r|\n/', $text) ?: [];
+        $lines = array_values(array_filter(array_map('trim', $lines), fn($line) => $line !== ''));
+        foreach ($lines as $i => $line) {
+            $lines[$i] = ($i + 1) . '. ' . $line;
+        }
+        return implode("\n", $lines);
     }
 
     private function toInt(?string $s): ?int
