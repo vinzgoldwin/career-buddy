@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, router, usePage } from '@inertiajs/vue3';
-import { CheckCircle2, ChevronLeft, Sparkles } from 'lucide-vue-next';
-import { computed } from 'vue';
 import { cn } from '@/lib/utils';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { CheckCircle2, ChevronLeft, Sparkles, Info } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 const page: any = usePage();
 const evaluation = page.props.evaluation || {};
@@ -110,7 +111,7 @@ function fieldBadgeClass(field: string) {
 
             <!-- Summary -->
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 flex flex-col gap-4">
+                <div class="flex flex-col gap-4 rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5">
                     <div class="flex items-center justify-between">
                         <div>
                             <div class="text-sm text-muted-foreground">Overall Score</div>
@@ -121,10 +122,7 @@ function fieldBadgeClass(field: string) {
                         <CheckCircle2 class="h-8 w-8 text-primary" />
                     </div>
                     <div class="h-2 w-full rounded-full bg-muted">
-                        <div
-                            class="h-full rounded-full bg-primary"
-                            :style="{ width: totalScore !== null ? `${totalScore}%` : '0%' }"
-                        />
+                        <div class="h-full rounded-full bg-primary" :style="{ width: totalScore !== null ? `${totalScore}%` : '0%' }" />
                     </div>
                 </div>
 
@@ -143,7 +141,7 @@ function fieldBadgeClass(field: string) {
 
             <!-- Sections -->
             <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1 flex flex-col gap-4">
+                <div class="flex flex-col gap-4 rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1">
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-semibold">Impact</h2>
                         <div class="text-sm text-muted-foreground">{{ impactScore }}/{{ SECTION_MAX_SCORES.impact }}</div>
@@ -166,7 +164,7 @@ function fieldBadgeClass(field: string) {
                     <div v-else class="text-sm text-muted-foreground">No details provided.</div>
                 </div>
 
-                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1 flex flex-col gap-4">
+                <div class="flex flex-col gap-4 rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1">
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-semibold">Skills & Traits</h2>
                         <div class="text-sm text-muted-foreground">{{ skillsAndTraitsScore }}/{{ SECTION_MAX_SCORES.skills_and_traits }}</div>
@@ -189,7 +187,7 @@ function fieldBadgeClass(field: string) {
                     <div v-else class="text-sm text-muted-foreground">No details provided.</div>
                 </div>
 
-                <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1 flex flex-col gap-4">
+                <div class="flex flex-col gap-4 rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 xl:col-span-1">
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-semibold">Alignment with Job</h2>
                         <div class="text-sm text-muted-foreground">{{ alignmentScore }}/{{ SECTION_MAX_SCORES.alignment_with_job }}</div>
@@ -213,51 +211,75 @@ function fieldBadgeClass(field: string) {
                 </div>
             </div>
 
-      <!-- Overall Recommendation -->
-      <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 flex flex-col gap-4">
-        <div class="flex items-center gap-2">
-          <Sparkles class="h-4 w-4 text-primary" />
-          <h2 class="text-lg font-semibold">Overall Recommendation</h2>
-        </div>
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div class="flex flex-col gap-1">
-            <div class="text-sm text-muted-foreground">Strengths</div>
-            <p class="text-sm whitespace-pre-line">{{ evaluation.overall?.strengths || '—' }}</p>
-          </div>
-          <div class="flex flex-col gap-1">
-            <div class="text-sm text-muted-foreground">Areas for Improvement</div>
-            <p class="text-sm whitespace-pre-line">{{ evaluation.overall?.area_for_improvement || '—' }}</p>
-          </div>
-        </div>
-      </div>
+            <!-- Overall Recommendation -->
+            <div class="flex flex-col gap-4 rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5">
+                <div class="flex items-center gap-2">
+                    <Sparkles class="h-4 w-4 text-primary" />
+                    <h2 class="text-lg font-semibold">Overall Recommendation</h2>
+                </div>
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div class="flex flex-col gap-1">
+                        <div class="text-sm text-muted-foreground">Strengths</div>
+                        <p class="text-sm whitespace-pre-line">{{ evaluation.overall?.strengths || '—' }}</p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <div class="text-sm text-muted-foreground">Areas for Improvement</div>
+                        <p class="text-sm whitespace-pre-line">{{ evaluation.overall?.area_for_improvement || '—' }}</p>
+                    </div>
+                </div>
+            </div>
 
-      <!-- Specific Changes -->
-      <div class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 flex flex-col gap-3">
-        <h2 class="text-lg font-semibold">Specific Immediate Changes</h2>
-        <div v-if="specificChanges.length" class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="text-left text-muted-foreground">
-                <th class="py-2 pr-4">Field</th>
-                <th class="py-2 pr-4">Old Value</th>
-                <th class="py-2 pr-4">New Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(c, i) in specificChanges" :key="i" class="border-t">
-                  <td class="py-2 pr-4">
-                      <Badge variant="outline" :class="fieldBadgeClass(c.field)">
-                          {{ formatField(c.field) }}
-                      </Badge>
-                  </td>
-                  <td class="py-2 pr-4 whitespace-pre-line">{{ c.old_value }}</td>
-                <td class="py-2 pr-4 whitespace-pre-line">{{ c.new_value }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else class="text-sm text-muted-foreground">No specific changes.</div>
-      </div>
+            <!-- Specific Changes -->
+            <div class="flex flex-col gap-3 rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5">
+                <h2 class="text-lg font-semibold">Specific Immediate Changes</h2>
+                <div v-if="specificChanges.length" class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-muted-foreground">
+                                <th class="py-2 pr-4">Field</th>
+                                <th class="py-2 pr-4">Old Value</th>
+                                <th class="py-2 pr-4">New Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(c, i) in specificChanges" :key="i" class="border-t">
+                                <td class="py-2 pr-4">
+                                    <template v-if="c.reference">
+                                        <TooltipProvider :delay-duration="0">
+                                            <Tooltip>
+                                                <TooltipTrigger as-child>
+                                                    <Badge
+                                                        variant="outline"
+                                                        :class="cn(
+                                                            fieldBadgeClass(c.field),
+                                                            'inline-flex items-center whitespace-nowrap pl-2.5 !pr-2'
+                                                          )"
+                                                        class="inline-flex items-center"
+                                                    >
+                                                        {{ formatField(c.field) }}
+                                                        <Info class="ml-1 h-3 w-3 shrink-0" />
+                                                    </Badge>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>{{ c.reference }}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    </template>
+                                    <template v-else>
+                                        <Badge variant="outline" :class="fieldBadgeClass(c.field)">
+                                            {{ formatField(c.field) }}
+                                        </Badge>
+                                    </template>
+                                </td>
+                                <td class="py-2 pr-4 whitespace-pre-line">{{ c.old_value }}</td>
+                                <td class="py-2 pr-4 whitespace-pre-line">{{ c.new_value }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div v-else class="text-sm text-muted-foreground">No specific changes.</div>
+            </div>
         </div>
     </AppLayout>
 </template>
