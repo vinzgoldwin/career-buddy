@@ -232,9 +232,13 @@ class ProfileEvaluationService
                   - `field`: one of the valid fields (summary, skills, experiences.*.description, educations.*.description, projects.*.description, or licenses_and_certifications.*.description). Do not use wildcard patterns in your final output.
                   - `id`: the unique identifier of the parent entity if available (use the profile’s `id`, `name`, or zero‑based `index` as a stable locator).
                   - `specific_field`: the nested field name (e.g., "description") when modifying a nested entity.
-                  - `old_value`: the current value.
-                  - `new_value`: the suggested value.
-               d. If there are no specific immediate changes to recommend, leave `<specific_change>` empty.
+                  - `old_value`: **plain text string only** (never JSON, never arrays, never brackets).
+                  - `new_value`: **plain text string only** (never JSON, never arrays, never brackets).
+               d. Special rule for `field: "skills"`:
+                  - Treat the profile’s skills array as a single comma-separated string.
+                  - `old_value` and `new_value` MUST be a single string like: "PHP, Laravel, Vue.js, MySQL".
+                  - No `[]`, no quotes, no escaping, no nested arrays. Deduplicate case-insensitively. Use consistent casing from the profile when present.
+               e. If there are no specific immediate changes to recommend, leave `<specific_change>` empty.
 
             8. Guidelines:
                - Fairness: Exclude all demographic or personal identity factors from consideration; score solely on job‑relevant content.

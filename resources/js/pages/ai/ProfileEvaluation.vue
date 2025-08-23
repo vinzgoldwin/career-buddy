@@ -290,7 +290,7 @@ function applyAllChanges() {
             <!-- Specific Changes -->
             <div class="flex flex-col gap-3 rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold">Specific Immediate Changes</h2>
+                    <h2 class="text-lg font-semibold">Specific Changes</h2>
                     <Button size="sm" variant="outline" :disabled="applyingAll" @click="applyAllChanges">
                         <Loader2 v-if="applyingAll" class="mr-2 h-3.5 w-3.5 animate-spin" />
                         Apply All
