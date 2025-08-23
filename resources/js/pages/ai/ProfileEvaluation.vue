@@ -92,6 +92,22 @@ function fieldBadgeClass(field: string) {
     return cn('border-transparent', colors[field] || 'bg-muted text-muted-foreground');
 }
 
+function parseSkills(value: string | null | undefined) {
+    if (!value) return [] as string[];
+    return value
+        .split(',')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+}
+
+function diffSkills(oldValue: string | null | undefined, newValue: string | null | undefined) {
+    const oldSkills = new Set(parseSkills(oldValue).map((s) => s.toLowerCase()));
+    return parseSkills(newValue).map((skill) => ({
+        skill,
+        isNew: !oldSkills.has(skill.toLowerCase()),
+    }));
+}
+
 function applyChange(change: any) {
     if (!change?.id) return;
     if (!applyingIds.value.includes(change.id)) applyingIds.value.push(change.id);
@@ -354,14 +370,43 @@ function applyAllChanges() {
                             </div>
                         </div>
                         <div class="mt-3 grid gap-4 md:grid-cols-2">
-                            <div>
-                                <div class="mb-1 text-xs font-medium text-muted-foreground">Old Value</div>
-                                <p class="text-sm whitespace-pre-line">{{ c.old_value }}</p>
-                            </div>
-                            <div>
-                                <div class="mb-1 text-xs font-medium text-muted-foreground">New Value</div>
-                                <p class="text-sm whitespace-pre-line">{{ c.new_value }}</p>
-                            </div>
+                            <template v-if="c.field === 'skills'">
+                                <div>
+                                    <div class="mb-1 text-xs font-medium text-muted-foreground">Old Value</div>
+                                    <div class="flex flex-wrap gap-1">
+                                        <Badge
+                                            v-for="skill in parseSkills(c.old_value)"
+                                            :key="`old-${skill}`"
+                                            variant="outline"
+                                        >
+                                            {{ skill }}
+                                        </Badge>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="mb-1 text-xs font-medium text-muted-foreground">New Value</div>
+                                    <div class="flex flex-wrap gap-1">
+                                        <Badge
+                                            v-for="item in diffSkills(c.old_value, c.new_value)"
+                                            :key="`new-${item.skill}`"
+                                            :variant="item.isNew ? 'default' : 'outline'"
+                                            :class="item.isNew ? fieldBadgeClass('skills') : ''"
+                                        >
+                                            {{ item.skill }}
+                                        </Badge>
+                                    </div>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <div>
+                                    <div class="mb-1 text-xs font-medium text-muted-foreground">Old Value</div>
+                                    <p class="text-sm whitespace-pre-line">{{ c.old_value }}</p>
+                                </div>
+                                <div>
+                                    <div class="mb-1 text-xs font-medium text-muted-foreground">New Value</div>
+                                    <p class="text-sm whitespace-pre-line">{{ c.new_value }}</p>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
