@@ -1,14 +1,19 @@
 import { toast } from '@/components/ui/toast';
 
+const DEFAULT_DURATION = 5000; // 5 seconds
+
 export function notifySuccess(description: string, title = 'Success') {
-    toast({ title, description, variant: 'success' });
+    const { dismiss } = toast({ title, description, variant: 'success' });
+    setTimeout(dismiss, DEFAULT_DURATION);
 }
 
 export function notifyError(description: string, title = 'Error') {
-    toast({ title, description, variant: 'destructive' });
+    const { dismiss } = toast({ title, description, variant: 'destructive' });
+    setTimeout(dismiss, DEFAULT_DURATION);
 }
 
 export function notifyInfo(description: string, title = 'Notice') {
-    toast({ title, description });
+    const { dismiss } = toast({ title, description });
+    setTimeout(dismiss, DEFAULT_DURATION);
 }
 

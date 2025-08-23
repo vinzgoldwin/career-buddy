@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { cn } from '@/lib/utils';
+import { notifySuccess } from '@/lib/notify';
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { CheckCircle2, ChevronLeft, Sparkles, Info, Loader2 } from 'lucide-vue-next';
+import { CheckCircle2, ChevronLeft, Info, Loader2, Sparkles } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const page: any = usePage();
@@ -94,45 +95,56 @@ function fieldBadgeClass(field: string) {
 function applyChange(change: any) {
     if (!change?.id) return;
     if (!applyingIds.value.includes(change.id)) applyingIds.value.push(change.id);
-    router.post(route('ai-evaluation.apply-change', { evaluation: evaluation.id, change: change.id }), {}, {
-        preserveScroll: true,
-        onFinish: () => {
-            applyingIds.value = applyingIds.value.filter((id) => id !== change.id);
+    router.post(
+        route('ai-evaluation.apply-change', { evaluation: evaluation.id, change: change.id }),
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                applyingIds.value = applyingIds.value.filter((id) => id !== change.id);
+            },
+            onSuccess: () => {
+                // Show success notification
+                notifySuccess('Change applied successfully!', 'Success');
+
+                // Manually update the applied status in the current data
+                if (Array.isArray(evaluation.specific_changes)) {
+                    evaluation.specific_changes = evaluation.specific_changes.map((c) => (c.id === change.id ? { ...c, applied: true } : c));
+                }
+                // Then reload to get the server state
+                router.reload({ only: ['evaluation'] });
+            },
         },
-        onSuccess: () => {
-            // Manually update the applied status in the current data
-            if (Array.isArray(evaluation.specific_changes)) {
-                const updatedChanges = evaluation.specific_changes.map(c => 
-                    c.id === change.id ? { ...c, applied: true } : c
-                );
-                evaluation.specific_changes = updatedChanges;
-            }
-            // Then reload to get the server state
-            router.reload({ only: ['evaluation'] });
-        },
-    });
+    );
 }
 
 function applyAllChanges() {
     applyingAll.value = true;
-    router.post(route('ai-evaluation.apply-all', { evaluation: evaluation.id }), {}, {
-        preserveScroll: true,
-        onFinish: () => {
-            applyingAll.value = false;
+    router.post(
+        route('ai-evaluation.apply-all', { evaluation: evaluation.id }),
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                applyingAll.value = false;
+            },
+            onSuccess: () => {
+                // Show success notification
+                notifySuccess('All changes applied successfully!', 'Success');
+
+                // Manually update the applied status in the current data
+                if (Array.isArray(evaluation.specific_changes)) {
+                    const updatedChanges = evaluation.specific_changes.map((c) => ({
+                        ...c,
+                        applied: true,
+                    }));
+                    evaluation.specific_changes = updatedChanges;
+                }
+                // Then reload to get the server state
+                router.reload({ only: ['evaluation'] });
+            },
         },
-        onSuccess: () => {
-            // Manually update the applied status in the current data
-            if (Array.isArray(evaluation.specific_changes)) {
-                const updatedChanges = evaluation.specific_changes.map(c => ({
-                    ...c,
-                    applied: true
-                }));
-                evaluation.specific_changes = updatedChanges;
-            }
-            // Then reload to get the server state
-            router.reload({ only: ['evaluation'] });
-        },
-    });
+    );
 }
 </script>
 
@@ -299,9 +311,7 @@ function applyAllChanges() {
                                 v-for="(c, i) in specificChanges"
                                 :key="c.id"
                                 class="border-t"
-                                :class="[
-                                    c.applied ? 'bg-emerald-50/60 dark:bg-emerald-900/20' : '',
-                                ]"
+                                :class="[c.applied ? 'bg-emerald-50/60 dark:bg-emerald-900/20' : '']"
                             >
                                 <td class="py-2 pr-4">
                                     <template v-if="c.reference">
@@ -310,10 +320,9 @@ function applyAllChanges() {
                                                 <TooltipTrigger as-child>
                                                     <Badge
                                                         variant="outline"
-                                                        :class="cn(
-                                                            fieldBadgeClass(c.field),
-                                                            'inline-flex items-center whitespace-nowrap pl-2.5 !pr-2'
-                                                          )"
+                                                        :class="
+                                                            cn(fieldBadgeClass(c.field), 'inline-flex items-center !pr-2 pl-2.5 whitespace-nowrap')
+                                                        "
                                                         class="inline-flex items-center"
                                                     >
                                                         {{ formatField(c.field) }}
@@ -339,7 +348,7 @@ function applyAllChanges() {
                                         <Button
                                             size="sm"
                                             variant="ghost"
-                                            class="bg-primary-gradient text-white hover:opacity-90 px-3 py-1.5"
+                                            class="bg-secondary-gradient px-3 py-1.5 text-white hover:opacity-90"
                                             :disabled="applyingIds.includes(c.id)"
                                             @click="applyChange(c)"
                                         >
