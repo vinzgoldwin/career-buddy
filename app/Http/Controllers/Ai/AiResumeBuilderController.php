@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Ai\ResumeStoreRequest;
 use App\Models\EmploymentType;
 use App\Services\PdfToTextService;
+use App\Services\Resume\BuildPdfResumeService;
 use App\Services\ResumeBuilderService;
 use App\Services\ResumeParsingService;
 use Illuminate\Http\RedirectResponse;
@@ -20,6 +21,7 @@ class AiResumeBuilderController extends Controller
         protected PdfToTextService $pdfToTextService,
         protected ResumeParsingService $resumeParsingService,
         protected ResumeBuilderService $resumeBuilderService,
+        protected BuildPdfResumeService $buildPdfResumeService,
     ) {}
 
     public function index()
@@ -112,5 +114,10 @@ class AiResumeBuilderController extends Controller
 
             return redirect()->back()->with('error', 'An error occurred while processing your resume. Please try again.');
         }
+    }
+
+    public function download()
+    {
+        return $this->buildPdfResumeService->downloadForCurrentUser();
     }
 }

@@ -70,6 +70,10 @@ Route::post('ai-resume-builder/parse-job', [AiJobController::class, 'parse'])
     ->middleware(['auth', 'verified'])
     ->name('ai-resume-builder.parse-job');
 
+Route::get('ai-resume-builder/download', [AiResumeBuilderController::class, 'download'])
+    ->middleware(['auth', 'verified'])
+    ->name('ai-resume-builder.download');
+
 Route::get('ai-evaluations', [ProfileEvaluationController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('ai-evaluation.index');

@@ -9,6 +9,7 @@ import { notifySuccess, notifyError } from '@/lib/notify';
 import {
   FileText,
   Upload,
+  Download,
   Plus,
   Trash2,
   Sparkles,
@@ -320,6 +321,21 @@ const removeLicense = (index: number) => removeItem(form.licenses_and_certificat
 const removeProject = (index: number) => removeItem(form.projects, index);
 const removeSkill = (index: number) => removeItem(form.skills, index);
 
+// Download PDF (SSR-safe)
+const downloadPdf = () => {
+  try {
+    const url = route('ai-resume-builder.download');
+    if (typeof window !== 'undefined' && window?.open) {
+      window.open(url, '_blank');
+    } else {
+      router.visit(url);
+    }
+  } catch (e) {
+    // Fallback navigation
+    router.visit(route('ai-resume-builder.download'));
+  }
+};
+
 // Submit form
 const submitForm = () => {
   console.log('Form submitted:', form);
@@ -452,10 +468,10 @@ onUnmounted(() => {
                             Resume Editor
                     </Button>
 
-                    <!-- Go to Evaluation Center -->
-                    <Button variant="outline" class="flex items-center gap-2 w-fit" @click="router.visit(route('ai-evaluation.index'))">
-                        <Sparkles class="h-5 w-5" />
-                        Evaluate Profile
+                    <!-- Download PDF Resume Button -->
+                    <Button variant="ghost" class="flex items-center gap-2 w-fit bg-emerald-600 text-white hover:opacity-90" @click="downloadPdf">
+                        <Download class="h-5 w-5" />
+                        Download PDF
                     </Button>
                 </div>
 
@@ -1051,7 +1067,7 @@ onUnmounted(() => {
                           </template>
                 </FullscreenDialog>
 
-                
+
 
                 <!-- File Upload Dialog -->
                 <FileUploadDialog

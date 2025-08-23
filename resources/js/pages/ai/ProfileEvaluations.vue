@@ -49,10 +49,6 @@ function openEvaluation(id: number) {
   router.visit(route('ai-evaluation.show', { evaluation: id }))
 }
 
-function backToBuilder() {
-  router.visit(route('ai-resume-builder'))
-}
-
 function clamp(text: string, max: number) {
   if (!text) return ''
   const t = String(text)
@@ -76,7 +72,6 @@ function clamp(text: string, max: number) {
           <p class="text-muted-foreground">Review your previous evaluations and create new ones.</p>
         </div>
         <div class="flex gap-2">
-          <Button variant="outline" @click="backToBuilder"> <ChevronLeft class="mr-2 h-4 w-4" /> Back to Builder </Button>
           <Button class="bg-primary-gradient text-white hover:opacity-90" @click="isPasteJobDialogOpen = true">
             <FileText class="mr-2 h-4 w-4" /> Paste Job Description
           </Button>

@@ -13,8 +13,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const features = [
     {
-        title: 'AI Resume Builder',
-        description: 'Upload / build your resume to enhance with AI',
+        title: 'Resume Evaluation',
+        description: 'Analyse your resume against the job description and receive tailored suggestions to stand out.',
         icon: '📄',
     },
     {
@@ -48,10 +48,10 @@ const features = [
                     <p class="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
                         Your all-in-one platform to supercharge your job search and career growth
                     </p>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
-                        <div 
-                            v-for="(feature, index) in features" 
+                        <div
+                            v-for="(feature, index) in features"
                             :key="index"
                             class="bg-card-gradient rounded-lg p-6 text-left border border-sidebar-border/50 dark:border-sidebar-border/70 transition-all hover:scale-[1.02]"
                         >
@@ -64,7 +64,7 @@ const features = [
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="mt-12">
                         <Link
                             :href="route('ai-resume-builder')"

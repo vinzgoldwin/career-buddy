@@ -2,11 +2,11 @@
 import { Head, Link } from '@inertiajs/vue3'
 
 const features = [
-  {
-    title: 'AI Resume Builder',
-    description: 'Upload or build your resume and enhance it with AI.',
-    icon: '📄',
-  },
+    {
+        title: 'Resume Evaluation',
+        description: 'Analyse your resume against the job description and receive tailored suggestions to stand out.',
+        icon: '📄',
+    },
   {
     title: 'Mock Interview',
     description: 'Practice interviews with our AI-powered mock interview tool.',

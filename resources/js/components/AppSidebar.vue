@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { CreditCard, FileText, LayoutGrid, MessageCircle, Notebook, Send, Users } from 'lucide-vue-next';
+import { CreditCard, FileText, LayoutGrid, MessageCircle, Notebook, Send, Sparkles, Users } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const serviceNavItems: NavItem[] = [
@@ -15,9 +15,14 @@ const serviceNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'AI Resume Builder',
+        title: 'Resume Builder',
         href: '/ai-resume-builder',
         icon: FileText,
+    },
+    {
+        title: 'Resume Evaluation',
+        href: '/ai-evaluations',
+        icon: Sparkles,
     },
     {
         title: 'Mock Interview',
