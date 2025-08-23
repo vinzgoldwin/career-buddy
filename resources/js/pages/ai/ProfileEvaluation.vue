@@ -5,8 +5,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import AppLayout from '@/layouts/AppLayout.vue';
 import { cn } from '@/lib/utils';
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { CheckCircle2, ChevronLeft, Sparkles, Info } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { CheckCircle2, ChevronLeft, Sparkles, Info, Loader2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 const page: any = usePage();
 const evaluation = page.props.evaluation || {};
@@ -65,6 +65,8 @@ const skillsAndTraitsScore = computed(() => skillsAndTraits.value.reduce((sum, r
 const alignmentScore = computed(() => alignment.value.reduce((sum, row) => sum + (row.score ?? 0), 0));
 
 const specificChanges = computed(() => (Array.isArray(evaluation.specific_changes) ? evaluation.specific_changes : []));
+const applyingIds = ref<number[]>([]);
+const applyingAll = ref(false);
 
 function formatField(field: string) {
     if (field === 'licenses_and_certifications') {
@@ -87,6 +89,50 @@ function fieldBadgeClass(field: string) {
         projects: 'bg-pink-100 text-pink-700 dark:bg-pink-700/20 dark:text-pink-300',
     };
     return cn('border-transparent', colors[field] || 'bg-muted text-muted-foreground');
+}
+
+function applyChange(change: any) {
+    if (!change?.id) return;
+    if (!applyingIds.value.includes(change.id)) applyingIds.value.push(change.id);
+    router.post(route('ai-evaluation.apply-change', { evaluation: evaluation.id, change: change.id }), {}, {
+        preserveScroll: true,
+        onFinish: () => {
+            applyingIds.value = applyingIds.value.filter((id) => id !== change.id);
+        },
+        onSuccess: () => {
+            // Manually update the applied status in the current data
+            if (Array.isArray(evaluation.specific_changes)) {
+                const updatedChanges = evaluation.specific_changes.map(c => 
+                    c.id === change.id ? { ...c, applied: true } : c
+                );
+                evaluation.specific_changes = updatedChanges;
+            }
+            // Then reload to get the server state
+            router.reload({ only: ['evaluation'] });
+        },
+    });
+}
+
+function applyAllChanges() {
+    applyingAll.value = true;
+    router.post(route('ai-evaluation.apply-all', { evaluation: evaluation.id }), {}, {
+        preserveScroll: true,
+        onFinish: () => {
+            applyingAll.value = false;
+        },
+        onSuccess: () => {
+            // Manually update the applied status in the current data
+            if (Array.isArray(evaluation.specific_changes)) {
+                const updatedChanges = evaluation.specific_changes.map(c => ({
+                    ...c,
+                    applied: true
+                }));
+                evaluation.specific_changes = updatedChanges;
+            }
+            // Then reload to get the server state
+            router.reload({ only: ['evaluation'] });
+        },
+    });
 }
 </script>
 
@@ -231,7 +277,13 @@ function fieldBadgeClass(field: string) {
 
             <!-- Specific Changes -->
             <div class="flex flex-col gap-3 rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5">
-                <h2 class="text-lg font-semibold">Specific Immediate Changes</h2>
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold">Specific Immediate Changes</h2>
+                    <Button size="sm" variant="outline" :disabled="applyingAll" @click="applyAllChanges">
+                        <Loader2 v-if="applyingAll" class="mr-2 h-3.5 w-3.5 animate-spin" />
+                        Apply All
+                    </Button>
+                </div>
                 <div v-if="specificChanges.length" class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
@@ -239,10 +291,18 @@ function fieldBadgeClass(field: string) {
                                 <th class="py-2 pr-4">Field</th>
                                 <th class="py-2 pr-4">Old Value</th>
                                 <th class="py-2 pr-4">New Value</th>
+                                <th class="py-2 pr-2 text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(c, i) in specificChanges" :key="i" class="border-t">
+                            <tr
+                                v-for="(c, i) in specificChanges"
+                                :key="c.id"
+                                class="border-t"
+                                :class="[
+                                    c.applied ? 'bg-emerald-50/60 dark:bg-emerald-900/20' : '',
+                                ]"
+                            >
                                 <td class="py-2 pr-4">
                                     <template v-if="c.reference">
                                         <TooltipProvider :delay-duration="0">
@@ -274,6 +334,26 @@ function fieldBadgeClass(field: string) {
                                 </td>
                                 <td class="py-2 pr-4 whitespace-pre-line">{{ c.old_value }}</td>
                                 <td class="py-2 pr-4 whitespace-pre-line">{{ c.new_value }}</td>
+                                <td class="py-2 pr-2 text-right">
+                                    <template v-if="!c.applied">
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            class="bg-primary-gradient text-white hover:opacity-90 px-3 py-1.5"
+                                            :disabled="applyingIds.includes(c.id)"
+                                            @click="applyChange(c)"
+                                        >
+                                            <Loader2 v-if="applyingIds.includes(c.id)" class="mr-2 h-3.5 w-3.5 animate-spin" />
+                                            Apply
+                                        </Button>
+                                    </template>
+                                    <template v-else>
+                                        <Badge variant="secondary" class="gap-1">
+                                            <CheckCircle2 class="h-3 w-3" />
+                                            Applied
+                                        </Badge>
+                                    </template>
+                                </td>
                             </tr>
                         </tbody>
                     </table>

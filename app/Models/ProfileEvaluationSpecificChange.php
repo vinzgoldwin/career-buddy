@@ -19,7 +19,15 @@ class ProfileEvaluationSpecificChange extends Model
         'specific_field',
         'old_value',
         'new_value',
+        'applied_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'applied_at' => 'datetime',
+        ];
+    }
 
     public function profileEvaluation(): BelongsTo
     {

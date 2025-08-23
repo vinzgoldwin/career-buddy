@@ -70,9 +70,21 @@ Route::post('ai-resume-builder/parse-job', [AiJobController::class, 'parse'])
     ->middleware(['auth', 'verified'])
     ->name('ai-resume-builder.parse-job');
 
+Route::get('ai-evaluations', [ProfileEvaluationController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('ai-evaluation.index');
+
 Route::get('ai-evaluation/{evaluation}', [ProfileEvaluationController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('ai-evaluation.show');
+
+Route::post('ai-evaluation/{evaluation}/apply-change/{change}', [ProfileEvaluationController::class, 'applyChange'])
+    ->middleware(['auth', 'verified'])
+    ->name('ai-evaluation.apply-change');
+
+Route::post('ai-evaluation/{evaluation}/apply-all', [ProfileEvaluationController::class, 'applyAll'])
+    ->middleware(['auth', 'verified'])
+    ->name('ai-evaluation.apply-all');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

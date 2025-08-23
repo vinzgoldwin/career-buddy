@@ -7,13 +7,39 @@ use App\Models\Education;
 use App\Models\Experience;
 use App\Models\LicenseAndCertification;
 use App\Models\ProfileEvaluation;
+use App\Models\ProfileEvaluationSpecificChange;
 use App\Models\Project;
+use App\Models\Skill;
 use App\Services\Profile\ProfileJsonService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ProfileEvaluationController extends Controller
 {
+    public function index()
+    {
+        $evaluations = ProfileEvaluation::query()
+            ->with(['jobDescription:id,title,summary'])
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->get()
+            ->map(function (ProfileEvaluation $e) {
+                return [
+                    'id' => $e->id,
+                    'total_score' => $e->total_score,
+                    'created_at' => optional($e->created_at)->toIso8601String(),
+                    'job' => [
+                        'title' => $e->jobDescription->title ?? null,
+                        'summary' => $e->jobDescription->summary ?? null,
+                    ],
+                ];
+            });
+
+        return Inertia::render('ai/ProfileEvaluations', [
+            'evaluations' => $evaluations,
+        ]);
+    }
+
     public function show(ProfileEvaluation $evaluation, ProfileJsonService $profileService)
     {
         $this->authorizeView($evaluation);
@@ -110,12 +136,15 @@ class ProfileEvaluationController extends Controller
             };
 
             return [
+                'id' => $change->id,
                 'field' => $change->field,
                 'entity_id' => $change->entity_id,
                 'specific_field' => $change->specific_field,
                 'reference' => $reference,
                 'old_value' => $this->formatChangeValue($change->old_value),
                 'new_value' => $this->formatChangeValue($change->new_value),
+                'applied' => (bool) $change->applied_at,
+                'applied_at' => $change->applied_at?->toIso8601String(),
             ];
         })->toArray();
 
@@ -139,7 +168,7 @@ class ProfileEvaluationController extends Controller
 
     private function formatChangeValue($value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             return (string) $value;
         }
 
@@ -153,11 +182,137 @@ class ProfileEvaluationController extends Controller
         return trim($value);
     }
 
-
     private function authorizeView(ProfileEvaluation $evaluation): void
     {
         if ($evaluation->user_id && Auth::id() !== $evaluation->user_id) {
             abort(403);
         }
+    }
+
+    public function applyChange(ProfileEvaluation $evaluation, ProfileEvaluationSpecificChange $change)
+    {
+        $this->authorizeView($evaluation);
+
+        if ($change->profile_evaluation_id !== $evaluation->id) {
+            abort(404);
+        }
+
+        match ($change->field) {
+            'summary' => $this->applySummary($change->new_value),
+            'skills' => $this->applySkills($change->new_value),
+            'experiences' => $this->applyModelField(Experience::class, $change->entity_id, $change->specific_field, $change->new_value),
+            'education' => $this->applyModelField(Education::class, $change->entity_id, $change->specific_field, $change->new_value),
+            'projects' => $this->applyModelField(Project::class, $change->entity_id, $change->specific_field, $change->new_value),
+            'licenses_and_certifications' => $this->applyModelField(LicenseAndCertification::class, $change->entity_id, $change->specific_field, $change->new_value),
+            default => null,
+        };
+
+        $change->update(['applied_at' => now()]);
+
+        return back()->with('success', 'Change applied');
+    }
+
+    public function applyAll(ProfileEvaluation $evaluation)
+    {
+        $this->authorizeView($evaluation);
+
+        $evaluation->load('specificChanges');
+
+        foreach ($evaluation->specificChanges as $change) {
+            match ($change->field) {
+                'summary' => $this->applySummary($change->new_value),
+                'skills' => $this->applySkills($change->new_value),
+                'experiences' => $this->applyModelField(Experience::class, $change->entity_id, $change->specific_field, $change->new_value),
+                'education' => $this->applyModelField(Education::class, $change->entity_id, $change->specific_field, $change->new_value),
+                'projects' => $this->applyModelField(Project::class, $change->entity_id, $change->specific_field, $change->new_value),
+                'licenses_and_certifications' => $this->applyModelField(LicenseAndCertification::class, $change->entity_id, $change->specific_field, $change->new_value),
+                default => null,
+            };
+
+            if (! $change->applied_at) {
+                $change->update(['applied_at' => now()]);
+            }
+        }
+
+        return back()->with('success', 'All applicable changes applied');
+    }
+
+    private function applySummary(?string $value): void
+    {
+        Auth::user()?->update([
+            'summary' => $this->formatChangeValue($value),
+        ]);
+    }
+
+    private function applySkills(?string $value): void
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return;
+        }
+
+        $formatted = $this->formatChangeValue($value);
+        $skills = collect(explode(',', (string) $formatted))
+            ->map(fn ($s) => trim($s))
+            ->filter()
+            ->unique(function ($s) {
+                return mb_strtolower($s);
+            });
+
+        foreach ($skills as $name) {
+            $exists = Skill::query()
+                ->where('user_id', $user->id)
+                ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+                ->exists();
+
+            if (! $exists) {
+                $user->skills()->create([
+                    'name' => $name,
+                    'proficiency_level' => 3,
+                ]);
+            }
+        }
+    }
+
+    private function applyModelField(string $modelClass, ?int $id, string $field, $value): void
+    {
+        if (! $id) {
+            return;
+        }
+
+        $model = $modelClass::query()
+            ->where('id', $id)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (! $model) {
+            return;
+        }
+
+        $safeFields = [
+            Experience::class => ['title', 'company', 'location', 'description', 'industry'],
+            Education::class => ['school', 'degree', 'field_of_study', 'description', 'grade', 'activities'],
+            Project::class => ['name', 'description', 'url', 'skills_used'],
+            LicenseAndCertification::class => ['name', 'issuing_organization', 'description', 'credential_id', 'credential_url'],
+        ];
+
+        $allowed = $safeFields[$modelClass] ?? [];
+        if (! in_array($field, $allowed, true)) {
+            return;
+        }
+
+        $formatted = $this->formatChangeValue($value);
+        $payload = $formatted;
+        if ($modelClass === Project::class && $field === 'skills_used') {
+            $payload = collect(explode(',', (string) $formatted))
+                ->map(fn ($s) => trim($s))
+                ->filter()
+                ->values()
+                ->toArray();
+        }
+
+        $model->update([
+            $field => $payload,
+        ]);
     }
 }

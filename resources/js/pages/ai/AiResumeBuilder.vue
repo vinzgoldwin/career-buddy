@@ -196,39 +196,6 @@ const form = useForm({
 // Dialog states
 const isDialogOpen = ref(false);
 const isUploadDialogOpen = ref(false);
-// Paste Job Description dialog state
-const isPasteJobDialogOpen = ref(false);
-const jobParseForm = useForm({ raw: '' });
-const isParsingJob = ref(false);
-
-const submitJobDescription = () => {
-  if (!jobParseForm.raw || jobParseForm.raw.trim().length < 30) {
-    notifyError('Please paste a longer job description.', 'Too short');
-    return;
-  }
-
-  isParsingJob.value = true;
-  jobParseForm.post(route('ai-resume-builder.parse-job'), {
-    preserveScroll: true,
-    onSuccess: () => {
-      notifySuccess('Job description submitted.', 'Received');
-      isPasteJobDialogOpen.value = false;
-      isParsingJob.value = false;
-    },
-    onError: (errors: any) => {
-      const bag = errors?.errors || errors;
-      if (bag && typeof bag === 'object') {
-        Object.values(bag).forEach((msg: any) => {
-          const message = Array.isArray(msg) ? msg.join('\n') : String(msg);
-          notifyError(message, 'Submission error');
-        });
-      } else {
-        notifyError('Failed to submit description.', 'Submission error');
-      }
-      isParsingJob.value = false;
-    }
-  });
-};
 // Upload processing overlay state
 const isProcessing = ref(false);
 const processingIndex = ref(0);
@@ -485,10 +452,10 @@ onUnmounted(() => {
                             Resume Editor
                     </Button>
 
-                    <!-- Paste Job Description Button -->
-                    <Button variant="outline" class="flex items-center gap-2 w-fit" @click="isPasteJobDialogOpen = true">
-                        <FileText class="h-5 w-5" />
-                        Paste Job Description
+                    <!-- Go to Evaluation Center -->
+                    <Button variant="outline" class="flex items-center gap-2 w-fit" @click="router.visit(route('ai-evaluation.index'))">
+                        <Sparkles class="h-5 w-5" />
+                        Evaluate Profile
                     </Button>
                 </div>
 
@@ -1084,33 +1051,7 @@ onUnmounted(() => {
                           </template>
                 </FullscreenDialog>
 
-                <!-- Paste Job Description Dialog -->
-                <FullscreenDialog
-                  :open="isPasteJobDialogOpen"
-                  title="Paste Job Description"
-                  description="Paste a raw job post. We will parse it into structured data."
-                  @close="isPasteJobDialogOpen = false"
-                >
-                  <div class="space-y-4">
-                    <label class="text-sm font-medium text-foreground">Raw job description</label>
-                    <textarea
-                      v-model="jobParseForm.raw"
-                      rows="14"
-                      placeholder="Paste the full job description here..."
-                      class="w-full rounded-md border bg-background p-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    />
-
-                    <p class="text-xs text-muted-foreground">Tip: Include responsibilities and qualifications sections for best results.</p>
-                  </div>
-
-                  <template #footer>
-                    <Button variant="ghost" @click="isPasteJobDialogOpen = false">Cancel</Button>
-                    <Button :disabled="isParsingJob" class="bg-primary-gradient text-white hover:opacity-90" @click="submitJobDescription">
-                      <Loader2 v-if="isParsingJob" class="h-4 w-4 mr-2 animate-spin" />
-                      Submit
-                    </Button>
-                  </template>
-                </FullscreenDialog>
+                
 
                 <!-- File Upload Dialog -->
                 <FileUploadDialog
