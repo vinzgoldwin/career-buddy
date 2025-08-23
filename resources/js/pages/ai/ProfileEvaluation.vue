@@ -296,76 +296,74 @@ function applyAllChanges() {
                         Apply All
                     </Button>
                 </div>
-                <div v-if="specificChanges.length" class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="text-left text-muted-foreground">
-                                <th class="py-2 pr-4">Field</th>
-                                <th class="py-2 pr-4">Old Value</th>
-                                <th class="py-2 pr-4">New Value</th>
-                                <th class="py-2 pr-2 text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr
-                                v-for="(c, i) in specificChanges"
-                                :key="c.id"
-                                class="border-t"
-                                :class="[c.applied ? 'bg-emerald-50/60 dark:bg-emerald-900/20' : '']"
-                            >
-                                <td class="py-2 pr-4">
-                                    <template v-if="c.reference">
-                                        <TooltipProvider :delay-duration="0">
-                                            <Tooltip>
-                                                <TooltipTrigger as-child>
-                                                    <Badge
-                                                        variant="outline"
-                                                        :class="
-                                                            cn(fieldBadgeClass(c.field), 'inline-flex items-center !pr-2 pl-2.5 whitespace-nowrap')
-                                                        "
-                                                        class="inline-flex items-center"
-                                                    >
-                                                        {{ formatField(c.field) }}
-                                                        <Info class="ml-1 h-3 w-3 shrink-0" />
-                                                    </Badge>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>{{ c.reference }}</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                    </template>
-                                    <template v-else>
-                                        <Badge variant="outline" :class="fieldBadgeClass(c.field)">
-                                            {{ formatField(c.field) }}
-                                        </Badge>
-                                    </template>
-                                </td>
-                                <td class="py-2 pr-4 whitespace-pre-line">{{ c.old_value }}</td>
-                                <td class="py-2 pr-4 whitespace-pre-line">{{ c.new_value }}</td>
-                                <td class="py-2 pr-2 text-right">
-                                    <template v-if="!c.applied">
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            class="bg-secondary-gradient px-3 py-1.5 text-white hover:opacity-90"
-                                            :disabled="applyingIds.includes(c.id)"
-                                            @click="applyChange(c)"
-                                        >
-                                            <Loader2 v-if="applyingIds.includes(c.id)" class="mr-2 h-3.5 w-3.5 animate-spin" />
-                                            Apply
-                                        </Button>
-                                    </template>
-                                    <template v-else>
-                                        <Badge variant="secondary" class="gap-1">
-                                            <CheckCircle2 class="h-3 w-3" />
-                                            Applied
-                                        </Badge>
-                                    </template>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div v-if="specificChanges.length" class="flex flex-col gap-4">
+                    <div
+                        v-for="c in specificChanges"
+                        :key="c.id"
+                        class="rounded-lg border p-4"
+                        :class="[c.applied ? 'bg-emerald-50/60 dark:bg-emerald-900/20' : '']"
+                    >
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <template v-if="c.reference">
+                                    <TooltipProvider :delay-duration="0">
+                                        <Tooltip>
+                                            <TooltipTrigger as-child>
+                                                <Badge
+                                                    variant="outline"
+                                                    :class="
+                                                        cn(fieldBadgeClass(c.field), 'inline-flex items-center !pr-2 pl-2.5 whitespace-nowrap')
+                                                    "
+                                                    class="inline-flex items-center"
+                                                >
+                                                    {{ formatField(c.field) }}
+                                                    <Info class="ml-1 h-3 w-3 shrink-0" />
+                                                </Badge>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>{{ c.reference }}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </template>
+                                <template v-else>
+                                    <Badge variant="outline" :class="fieldBadgeClass(c.field)">
+                                        {{ formatField(c.field) }}
+                                    </Badge>
+                                </template>
+                            </div>
+                            <div class="text-right">
+                                <template v-if="!c.applied">
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        class="bg-secondary-gradient px-3 py-1.5 text-white hover:opacity-90"
+                                        :disabled="applyingIds.includes(c.id)"
+                                        @click="applyChange(c)"
+                                    >
+                                        <Loader2 v-if="applyingIds.includes(c.id)" class="mr-2 h-3.5 w-3.5 animate-spin" />
+                                        Apply
+                                    </Button>
+                                </template>
+                                <template v-else>
+                                    <Badge variant="secondary" class="gap-1">
+                                        <CheckCircle2 class="h-3 w-3" />
+                                        Applied
+                                    </Badge>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="mt-3 grid gap-4 md:grid-cols-2">
+                            <div>
+                                <div class="mb-1 text-xs font-medium text-muted-foreground">Old Value</div>
+                                <p class="text-sm whitespace-pre-line">{{ c.old_value }}</p>
+                            </div>
+                            <div>
+                                <div class="mb-1 text-xs font-medium text-muted-foreground">New Value</div>
+                                <p class="text-sm whitespace-pre-line">{{ c.new_value }}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div v-else class="text-sm text-muted-foreground">No specific changes.</div>
             </div>
