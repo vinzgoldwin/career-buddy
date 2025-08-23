@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import FullscreenDialog from '@/components/FullscreenDialog.vue'
 import { FileText, Plus, ChevronLeft, Loader2 } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
-import { notifyError, notifySuccess } from '@/lib/notify'
+import { notifyError, notifyInfo, notifySuccess } from '@/lib/notify'
 
 const page: any = usePage()
 const evaluations = computed(() => (Array.isArray(page.props.evaluations) ? page.props.evaluations : []))
@@ -14,35 +14,68 @@ const evaluations = computed(() => (Array.isArray(page.props.evaluations) ? page
 const isPasteJobDialogOpen = ref(false)
 const isParsingJob = ref(false)
 const jobParseForm = useForm({ raw: '' })
+const isEvaluationPending = ref(false)
 
-const submitJobDescription = () => {
+function getCookie(name: string) {
+  const match = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith(name + '='))
+  return match ? decodeURIComponent(match.split('=')[1]) : null
+}
+
+const submitJobDescription = async () => {
   if (!jobParseForm.raw || jobParseForm.raw.trim().length < 30) {
     notifyError('Please paste a longer job description.', 'Too short')
     return
   }
 
   isParsingJob.value = true
-  jobParseForm.post(route('ai-resume-builder.parse-job'), {
-    preserveScroll: true,
-    onSuccess: () => {
-      notifySuccess('Job description submitted.', 'Received')
-      // Redirect happens server-side to the evaluation page
-      isPasteJobDialogOpen.value = false
-      isParsingJob.value = false
-    },
-    onError: (errors: any) => {
-      const bag = errors?.errors || errors
-      if (bag && typeof bag === 'object') {
-        Object.values(bag).forEach((msg: any) => {
-          const message = Array.isArray(msg) ? msg.join('\n') : String(msg)
-          notifyError(message, 'Submission error')
-        })
-      } else {
-        notifyError('Failed to submit description.', 'Submission error')
-      }
-      isParsingJob.value = false
-    },
-  })
+
+  // Inform the user and show a pending card while the server works
+  notifyInfo('We\'re generating your evaluation. It can take 2–3 minutes. Please wait. We\'ll refresh automatically when it\'s ready.', 'Working…')
+  isEvaluationPending.value = true
+  isPasteJobDialogOpen.value = false
+
+  try {
+    const token = getCookie('XSRF-TOKEN')
+    const res = await fetch(route('ai-resume-builder.parse-job'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // Use CSRF cookie header format Laravel expects for SPA requests
+        ...(token ? { 'X-XSRF-TOKEN': token } : {}),
+        // Ensure non-Inertia JSON response so we stay on the page
+        'Accept': 'application/json',
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({ raw: jobParseForm.raw }),
+    })
+
+    if (!res.ok) {
+      // Try to parse potential validation errors
+      let msg = 'Submission failed.'
+      try {
+        const data = await res.json()
+        const bag = (data?.errors || data)
+        if (bag && typeof bag === 'object') {
+          const combined = Object.values(bag).flat().join('\n')
+          if (combined) msg = combined
+        }
+      } catch (_) {}
+      throw new Error(msg)
+    }
+
+    // When finished, reload just the evaluations list and clear pending state
+    notifySuccess('Evaluation complete. Loading results…', 'Completed')
+    router.reload({ only: ['evaluations'] })
+    isEvaluationPending.value = false
+    jobParseForm.reset()
+  } catch (e: any) {
+    notifyError(e?.message || 'Failed to submit description.', 'Submission error')
+    isEvaluationPending.value = false
+  } finally {
+    isParsingJob.value = false
+  }
 }
 
 function openEvaluation(id: number) {
@@ -78,7 +111,24 @@ function clamp(text: string, max: number) {
         </div>
       </div>
 
-      <div v-if="evaluations.length" class="grid grid-cols-1 gap-4">
+      <div v-if="evaluations.length || isEvaluationPending" class="grid grid-cols-1 gap-4">
+        <!-- Pending/Evaluating card on top -->
+        <div v-if="isEvaluationPending" class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 opacity-70 pointer-events-none">
+          <div class="flex items-start justify-between">
+            <div class="pr-4">
+              <div class="flex items-center gap-2 text-lg font-semibold leading-tight">
+                <Loader2 class="h-4 w-4 animate-spin" />
+                Evaluation in progress
+              </div>
+              <div class="mt-1 text-sm text-muted-foreground">
+                This can take 2–3 minutes. We’ll refresh automatically when it’s done.
+              </div>
+            </div>
+            <div class="text-right text-xs text-muted-foreground">Just now</div>
+          </div>
+        </div>
+
+        <!-- Existing evaluations -->
         <div
           v-for="e in evaluations"
           :key="e.id"

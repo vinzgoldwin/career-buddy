@@ -8,6 +8,7 @@ use App\Models\ProfileEvaluation;
 use App\Models\ProfileEvaluationSpecificChange;
 use App\Services\Ai\ProfileEvaluationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use OpenAI\Laravel\Facades\OpenAI;
 use Tests\TestCase;
 
 class ProfileEvaluationServiceArrayConversionTest extends TestCase
@@ -77,5 +78,72 @@ class ProfileEvaluationServiceArrayConversionTest extends TestCase
         $this->assertIsArray($newValueArray);
         $this->assertEquals(['name' => 'PHP', 'level' => 5], $oldValueArray);
         $this->assertEquals(['name' => 'PHP', 'level' => 8], $newValueArray);
+    }
+
+    public function test_skills_arrays_are_flattened()
+    {
+        $user = User::factory()->create();
+
+        $jobDescription = JobDescription::create([
+            'user_id' => $user->id,
+            'title' => 'Engineer',
+            'seniority' => 'Mid',
+            'company_name' => 'Test Co',
+            'work_mode' => 'Remote',
+            'location' => 'SF',
+            'employment_type' => 'Full-time',
+            'summary' => 'summary',
+            'responsibilities' => json_encode(['Do things']),
+            'requirements' => json_encode(['Req']),
+            'skills' => json_encode([['name' => 'PHP', 'proficiency_level' => 5]]),
+            'years_experience_min' => 1,
+            'years_experience_max' => 3,
+            'raw_input' => 'raw',
+        ]);
+
+        $profile = ['summary' => 'sum'];
+        $job = ['title' => 'Engineer', 'company' => ['name' => 'Test Co'], 'requirements' => ['skills' => []]];
+
+        $content = '<evaluation><specific_change>[{"field":"skills","old_value":["PHP","Laravel"],"new_value":["PHP","Laravel","Node.js"]}]</specific_change></evaluation>';
+
+        config()->set('openai.api_key', 'test-key');
+        OpenAI::swap(new class($content)
+        {
+            public function __construct(private string $content) {}
+            public function chat()
+            {
+                $content = $this->content;
+                return new class($content)
+                {
+                    public function __construct(private string $content) {}
+                    public function create(array $params)
+                    {
+                        $content = $this->content;
+                        return new class($content)
+                        {
+                            public function __construct(private string $content) {}
+                            public function toArray(): array
+                            {
+                                return [
+                                    'choices' => [
+                                        ['message' => ['content' => $this->content]],
+                                    ],
+                                    'model' => 'test-model',
+                                    'usage' => [],
+                                ];
+                            }
+                        };
+                    }
+                };
+            }
+        });
+
+        $service = new ProfileEvaluationService();
+        $result = $service->evaluateAndStore($profile, $job, $user->id, $jobDescription->id);
+
+        $change = ProfileEvaluationSpecificChange::first();
+        $this->assertEquals('skills', $change->field);
+        $this->assertEquals('PHP,Laravel', $change->old_value);
+        $this->assertEquals('PHP,Laravel,Node.js', $change->new_value);
     }
 }

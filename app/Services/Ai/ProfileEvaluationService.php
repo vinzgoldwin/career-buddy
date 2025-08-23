@@ -132,26 +132,31 @@ class ProfileEvaluationService
         // Create specific changes
         if (isset($parsed['specific_changes']) && is_array($parsed['specific_changes'])) {
             foreach ($parsed['specific_changes'] as $change) {
-                // Convert array values to JSON strings if needed
                 $oldValue = $change['old_value'] ?? null;
                 $newValue = $change['new_value'] ?? null;
 
-                // Ensure old_value and new_value are strings
-                if (is_array($oldValue)) {
-                    $oldValue = json_encode($oldValue);
-                } elseif (!is_string($oldValue) && !is_null($oldValue)) {
-                    $oldValue = (string) $oldValue;
-                }
+                $field = $change['field'] ?? null;
 
-                if (is_array($newValue)) {
-                    $newValue = json_encode($newValue);
-                } elseif (!is_string($newValue) && !is_null($newValue)) {
-                    $newValue = (string) $newValue;
+                if ($field === 'skills') {
+                    $oldValue = $this->flattenSkills($oldValue);
+                    $newValue = $this->flattenSkills($newValue);
+                } else {
+                    if (is_array($oldValue)) {
+                        $oldValue = json_encode($oldValue);
+                    } elseif (!is_string($oldValue) && !is_null($oldValue)) {
+                        $oldValue = (string) $oldValue;
+                    }
+
+                    if (is_array($newValue)) {
+                        $newValue = json_encode($newValue);
+                    } elseif (!is_string($newValue) && !is_null($newValue)) {
+                        $newValue = (string) $newValue;
+                    }
                 }
 
                 ProfileEvaluationSpecificChange::create([
                     'profile_evaluation_id' => $saved->id,
-                    'field' => $change['field'] ?? null,
+                    'field' => $field,
                     'entity_id' => $change['id'] ?? null,
                     'specific_field' => $change['specific_field'] ?? null,
                     'old_value' => $oldValue,
@@ -448,6 +453,26 @@ class ProfileEvaluationService
             $lines[$i] = ($i + 1) . '. ' . $line;
         }
         return implode("\n", $lines);
+    }
+
+
+    private function flattenSkills($value): ?string
+    {
+        if (is_array($value)) {
+            return implode(',', $value);
+        }
+
+        if (is_string($value)) {
+            $trimmed = trim($value, '[]');
+            $trimmed = str_replace([chr(34), chr(39)], '', $trimmed);
+            return $trimmed;
+        }
+
+        if ($value === null) {
+            return null;
+        }
+
+        return (string) $value;
     }
 
     private function toInt(?string $s): ?int
