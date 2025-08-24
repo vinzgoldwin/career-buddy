@@ -121,7 +121,7 @@ function clamp(text: string, max: number) {
                 Evaluation in progress
               </div>
               <div class="mt-1 text-sm text-muted-foreground">
-                This can take 2–3 minutes. We’ll refresh automatically when it’s done.
+                This can take 1–3 minutes. We’ll refresh automatically when it’s done.
               </div>
             </div>
             <div class="text-right text-xs text-muted-foreground">Just now</div>

@@ -43,8 +43,8 @@ const SUBSECTION_MAX_SCORES = {
     },
 } as const;
 
-function backToBuilder() {
-    router.visit(route('ai-resume-builder'));
+function backToEvaluations() {
+    router.visit(route('ai-evaluation.index'));
 }
 
 function formatSubScores(section: Record<string, any>, maxScores: Record<string, number>) {
@@ -169,6 +169,7 @@ function applyAllChanges() {
     <AppLayout
         :breadcrumbs="[
             { title: 'AI Resume Builder', href: route('ai-resume-builder') },
+            { title: 'Evaluations', href: route('ai-evaluation.index') },
             { title: 'Evaluation', href: '' },
         ]"
     >
@@ -179,7 +180,7 @@ function applyAllChanges() {
                     <p class="text-muted-foreground">Objective evaluation based on your profile and the selected job.</p>
                 </div>
                 <div class="flex gap-2">
-                    <Button variant="outline" @click="backToBuilder"> <ChevronLeft class="mr-2 h-4 w-4" /> Back to Builder </Button>
+                    <Button variant="outline" @click="backToEvaluations"> <ChevronLeft class="mr-2 h-4 w-4" /> Back to Evaluations </Button>
                 </div>
             </div>
 
