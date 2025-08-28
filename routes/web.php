@@ -50,6 +50,10 @@ Route::get('interview-question-bank', [InterviewQuestionBankController::class, '
     ->middleware(['auth', 'verified'])
     ->name('interview-question-bank');
 
+Route::get('interview-question-bank/{question}', [InterviewQuestionBankController::class, 'show'])
+    ->middleware(['auth', 'verified'])
+    ->name('interview-question-bank.show');
+
 Route::get('ai-auto-apply', [AiAutoApplyController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('ai-auto-apply');
