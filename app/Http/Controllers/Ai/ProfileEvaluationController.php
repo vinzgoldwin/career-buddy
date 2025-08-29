@@ -22,8 +22,8 @@ class ProfileEvaluationController extends Controller
             ->with(['jobDescription:id,title,summary'])
             ->where('user_id', Auth::id())
             ->latest()
-            ->get()
-            ->map(function (ProfileEvaluation $e) {
+            ->paginate(10)
+            ->through(function (ProfileEvaluation $e) {
                 return [
                     'id' => $e->id,
                     'total_score' => $e->total_score,

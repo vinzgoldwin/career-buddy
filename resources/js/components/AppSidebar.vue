@@ -24,11 +24,11 @@ const serviceNavItems: NavItem[] = [
         href: '/ai-evaluations',
         icon: Sparkles,
     },
-    {
-        title: 'Mock Interview',
-        href: '/mock-interview',
-        icon: MessageCircle,
-    },
+    // {
+    //     title: 'Mock Interview',
+    //     href: '/mock-interview',
+    //     icon: MessageCircle,
+    // },
     {
         title: 'Interview Question Bank',
         href: '/interview-question-bank',

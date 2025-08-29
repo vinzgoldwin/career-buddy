@@ -7,11 +7,11 @@ const features = [
         description: 'Analyse your resume against the job description and receive tailored suggestions to stand out.',
         icon: '📄',
     },
-  {
-    title: 'Mock Interview',
-    description: 'Practice interviews with our AI-powered mock interview tool.',
-    icon: '💬',
-  },
+  // {
+  //   title: 'Mock Interview',
+  //   description: 'Practice interviews with our AI-powered mock interview tool.',
+  //   icon: '💬',
+  // },
   {
     title: 'Question Bank',
     description:

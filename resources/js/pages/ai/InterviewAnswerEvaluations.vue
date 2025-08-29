@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Head, router } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { FileText, ArrowRight, GaugeCircle } from 'lucide-vue-next'
 
@@ -20,6 +21,13 @@ const props = defineProps<{
 
 function openEvaluation(id: number) {
   router.visit(route('interview-answer-evaluations.show', { evaluation: id }))
+}
+
+function avgBadgeClass(score: number | null): string {
+  if (score == null) return 'bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border-zinc-500/20'
+  if (score >= 8) return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20'
+  if (score >= 6) return 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20'
+  return 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20'
 }
 </script>
 
@@ -49,10 +57,10 @@ function openEvaluation(id: number) {
           </CardHeader>
           <CardContent>
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2 text-sm text-muted-foreground">
-                <GaugeCircle class="h-4 w-4" />
-                Avg score: <span class="font-medium text-foreground">{{ e.average_score ?? '—' }}</span>
-              </div>
+              <Badge :class="avgBadgeClass(e.average_score)" class="inline-flex items-center gap-1">
+                <GaugeCircle class="h-3.5 w-3.5" />
+                <span>Avg {{ e.average_score !== null ? (e.average_score).toFixed(1) : '—' }}/10</span>
+              </Badge>
               <Button variant="outline" size="sm">
                 View <ArrowRight class="ml-2 h-4 w-4" />
               </Button>
@@ -60,7 +68,30 @@ function openEvaluation(id: number) {
           </CardContent>
         </Card>
       </div>
+
+      <!-- Pagination -->
+      <div v-if="evaluations.links?.length" class="mt-2 flex items-center justify-center gap-2">
+        <template v-for="link in evaluations.links" :key="link.label">
+          <span
+            v-if="!link.url"
+            class="px-3 py-1.5 text-sm text-muted-foreground/60"
+            v-html="link.label"
+          />
+          <Link
+            v-else
+            :href="link.url"
+            preserve-scroll
+            preserve-state
+            class="px-3 py-1.5 rounded-md border text-sm"
+            :class="[
+              link.active
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-background hover:bg-accent border-sidebar-border/70 dark:border-sidebar-border',
+            ]"
+            v-html="link.label"
+          />
+        </template>
+      </div>
     </div>
   </AppLayout>
 </template>
-

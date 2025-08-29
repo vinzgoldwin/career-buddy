@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Head, router, useForm, usePage } from '@inertiajs/vue3'
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3'
 import { Button } from '@/components/ui/button'
 import FullscreenDialog from '@/components/FullscreenDialog.vue'
 import { FileText, Plus, ChevronLeft, Loader2 } from 'lucide-vue-next'
@@ -8,7 +8,11 @@ import { computed, ref } from 'vue'
 import { notifyError, notifyInfo, notifySuccess } from '@/lib/notify'
 
 const page: any = usePage()
-const evaluations = computed(() => (Array.isArray(page.props.evaluations) ? page.props.evaluations : []))
+const evaluationList = computed<any[]>(() => {
+  const data = (page.props.evaluations && page.props.evaluations.data) || []
+  return Array.isArray(data) ? data : []
+})
+const paginationLinks = computed<any[]>(() => (page.props.evaluations && page.props.evaluations.links) || [])
 
 // Paste Job Description dialog state
 const isPasteJobDialogOpen = ref(false)
@@ -111,7 +115,7 @@ function clamp(text: string, max: number) {
         </div>
       </div>
 
-      <div v-if="evaluations.length || isEvaluationPending" class="grid grid-cols-1 gap-4">
+      <div v-if="evaluationList.length || isEvaluationPending" class="grid grid-cols-1 gap-4">
         <!-- Pending/Evaluating card on top -->
         <div v-if="isEvaluationPending" class="rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 opacity-70 pointer-events-none">
           <div class="flex items-start justify-between">
@@ -130,7 +134,7 @@ function clamp(text: string, max: number) {
 
         <!-- Existing evaluations -->
         <div
-          v-for="e in evaluations"
+          v-for="e in evaluationList"
           :key="e.id"
           class="cursor-pointer rounded-xl border bg-card-gradient p-5 ring-1 ring-black/5 hover:bg-accent/30 transition"
           @click="openEvaluation(e.id)"
@@ -160,6 +164,30 @@ function clamp(text: string, max: number) {
         <Button class="bg-primary-gradient text-white hover:opacity-90" @click="isPasteJobDialogOpen = true">
           <Plus class="mr-2 h-4 w-4" /> New Evaluation
         </Button>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="paginationLinks.length" class="mt-2 flex items-center justify-center gap-2">
+        <template v-for="link in paginationLinks" :key="link.label">
+          <span
+            v-if="!link.url"
+            class="px-3 py-1.5 text-sm text-muted-foreground/60"
+            v-html="link.label"
+          />
+          <Link
+            v-else
+            :href="link.url"
+            preserve-scroll
+            preserve-state
+            class="px-3 py-1.5 rounded-md border text-sm"
+            :class="[
+              link.active
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-background hover:bg-accent border-sidebar-border/70 dark:border-sidebar-border',
+            ]"
+            v-html="link.label"
+          />
+        </template>
       </div>
 
       <!-- Paste Job Description Dialog -->

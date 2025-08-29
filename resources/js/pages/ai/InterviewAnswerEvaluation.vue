@@ -4,7 +4,8 @@ import { Head, router } from '@inertiajs/vue3'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CheckCircle2, XCircle, GaugeCircle, BookOpenText, Sparkles, ListChecks, Lightbulb, Workflow, Scale, ChevronLeft, FileText } from 'lucide-vue-next'
+import { computed } from 'vue';
+import { CheckCircle2, XCircle, GaugeCircle, BookOpenText, Sparkles, ListChecks, Lightbulb, Workflow, Scale, ChevronLeft, FileText, Download } from 'lucide-vue-next'
 
 const props = defineProps<{
   evaluation: {
@@ -20,6 +21,25 @@ const props = defineProps<{
     encouraging_advice: string[] | null
   }
 }>()
+
+const avgScore = computed<number | null>(() => {
+  const vals = [
+    props.evaluation.overall_performance?.score ?? null,
+    props.evaluation.structural_integrity?.score ?? null,
+    props.evaluation.content_accuracy?.score ?? null,
+    props.evaluation.fluency_of_expression?.score ?? null,
+  ].filter((v) => typeof v === 'number') as number[]
+  if (!vals.length) return null
+  const sum = vals.reduce((a, b) => a + b, 0)
+  return Math.round((sum / vals.length) * 10) / 10
+})
+
+function avgBadgeClass(score: number | null): string {
+  if (score == null) return 'bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border-zinc-500/20'
+  if (score >= 8) return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20'
+  if (score >= 6) return 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20'
+  return 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20'
+}
 
 function scoreColor(score: number | null): string {
   if (score == null) return 'from-zinc-500/20 to-transparent border-zinc-500/30'
@@ -38,6 +58,14 @@ function parseComparativeItem(item: string): { type: 'good' | 'bad' | null; text
   }
   return { type: null, text: t }
 }
+
+function saveAsPdf() {
+  try {
+    if (typeof window !== 'undefined' && window?.print) {
+      window.print()
+    }
+  } catch (_) {}
+}
 </script>
 
 <template>
@@ -54,6 +82,14 @@ function parseComparativeItem(item: string): { type: 'good' | 'bad' | null; text
         </div>
         <div class="flex items-center gap-5">
           <Badge class="bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20">#{{ evaluation.id }}</Badge>
+          <Badge v-if="avgScore !== null" :class="avgBadgeClass(avgScore)" class="inline-flex items-center gap-1">
+            <GaugeCircle class="h-3.5 w-3.5" />
+            <span>Avg {{ avgScore?.toFixed(1) }}/10</span>
+          </Badge>
+          <Button variant="ghost" class="flex items-center gap-2 w-fit bg-emerald-600 text-white hover:opacity-90" @click="saveAsPdf">
+            <Download class="h-5 w-5" />
+            Save as PDF
+          </Button>
           <Button variant="outline" @click="router.visit(route('interview-answer-evaluations.index'))">
             <ChevronLeft class="mr-2 h-4 w-4" /> Back to list
           </Button>
