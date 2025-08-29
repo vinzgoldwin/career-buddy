@@ -431,7 +431,7 @@ TXT,
                 'views_count' => random_int(40, 500),
                 'users_practiced_count' => random_int(10, 30),
                 'explanation' => $item['explanation'],
-                'created_at' => now()->subDays(random_int(1, 365)),
+                'created_at' => now()->subDays(random_int(1, 30)),
                 'updated_at' => now(),
             ]);
         }
