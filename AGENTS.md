@@ -1,4 +1,50 @@
 <laravel-boost-guidelines>
+=== foundation rules ===
+
+# Laravel Boost Guidelines
+
+The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. These guidelines should be followed closely to enhance the user's satisfaction building Laravel applications.
+
+## Foundational Context
+This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
+
+- php - 8.3.15
+- inertiajs/inertia-laravel (INERTIA) - v2
+- laravel/framework (LARAVEL) - v12
+- laravel/prompts (PROMPTS) - v0
+- tightenco/ziggy (ZIGGY) - v2
+- laravel/pint (PINT) - v1
+- laravel/sail (SAIL) - v1
+- pestphp/pest (PEST) - v3
+- @inertiajs/vue3 (INERTIA) - v2
+- tailwindcss (TAILWINDCSS) - v4
+- vue (VUE) - v3
+- eslint (ESLINT) - v9
+- prettier (PRETTIER) - v3
+
+
+## Conventions
+- You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, naming.
+- Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
+- Check for existing components to reuse before writing a new one.
+
+## Verification Scripts
+- Do not create verification scripts or tinker when tests cover that functionality and prove it works. Unit and feature tests are more important.
+
+## Application Structure & Architecture
+- Stick to existing directory structure - don't create new base folders without approval.
+- Do not change the application's dependencies without approval.
+
+## Frontend Bundling
+- If the user doesn't see a frontend change reflected in the UI, it could mean they need to run `npm run build`, `npm run dev`, or `composer run dev`. Ask them.
+
+## Replies
+- Be concise in your explanations - focus on what's important rather than explaining obvious details.
+
+## Documentation Files
+- You must only create documentation files if explicitly requested by the user.
+
+
 === boost rules ===
 
 ## Laravel Boost
@@ -24,37 +70,48 @@
 - You must use this tool to search for Laravel-ecosystem documentation before falling back to other approaches.
 - Search the documentation before making code changes to ensure we are taking the correct approach.
 - Use multiple, broad, simple, topic based queries to start. For example: `['rate limiting', 'routing rate limiting', 'routing']`.
+- Do not add package names to queries - package information is already shared. For example, use `test resource table`, not `filament 4 test resource table`.
 
 ### Available Search Syntax
 - You can and should pass multiple queries at once. The most relevant results will be returned first.
 
 1. Simple Word Searches with auto-stemming - query=authentication - finds 'authenticate' and 'auth'
 2. Multiple Words (AND Logic) - query=rate limit - finds knowledge containing both "rate" AND "limit"
-3. Quoted Phrases (Exact Position) - query="infinite scroll - Words must be adjacent and in that order
+3. Quoted Phrases (Exact Position) - query="infinite scroll" - Words must be adjacent and in that order
 4. Mixed Queries - query=middleware "rate limit" - "middleware" AND exact phrase "rate limit"
 5. Multiple Queries - queries=["authentication", "middleware"] - ANY of these terms
 
 
-=== database safety rules ===
+=== php rules ===
 
-## Database Safety
-- NEVER execute destructive database commands that can delete records unless specifically requested for testing purposes.
-- Avoid using commands like `DELETE`, `TRUNCATE`, `DROP`, or `UPDATE` without explicit user confirmation.
-- Always prefer read-only operations when exploring or querying the database.
-- Use the `database-query` tool only for SELECT statements and read operations.
-- When testing database operations, always use transactions that can be rolled back or work with test databases.
-- If you need to demonstrate database operations that modify data, always warn the user and confirm before proceeding.
+## PHP
 
-### Testing Database Safety (Strict)
-- Tests MUST run against the test environment only. Use `.env.testing` and never `.env`.
-- Default to the in-memory/isolated test DB: `APP_ENV=testing`, `DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:` (as configured in `.env.testing`).
-- Use Laravel testing traits to isolate state:
-  - Prefer `RefreshDatabase` (recommended) or `DatabaseTransactions` in tests.
-  - Do not disable transactions or share state across tests.
-- Never point tests at production or development databases. If a test, script, or tool detects a non-testing connection, abort and report instead of running.
-- When invoking `php artisan test`, ensure the testing environment is active. If needed, pass `--env=testing` explicitly.
-- Do not run destructive CLI commands (migrate:fresh, db:wipe, seed) outside the testing environment. If required in tests, they must target the testing database only.
-- Do not use `tinker` or ad-hoc write queries against the real database during tests. For debugging, use factories and test transactions within the test environment.
+- Always use curly braces for control structures, even if it has one line.
+
+### Constructors
+- Use PHP 8 constructor property promotion in `__construct()`.
+    - <code-snippet>public function __construct(public GitHub $github) { }</code-snippet>
+- Do not allow empty `__construct()` methods with zero parameters.
+
+### Type Declarations
+- Always use explicit return type declarations for methods and functions.
+- Use appropriate PHP type hints for method parameters.
+
+<code-snippet name="Explicit Return Types and Method Params" lang="php">
+protected function isAccessible(User $user, ?string $path = null): bool
+{
+    ...
+}
+</code-snippet>
+
+## Comments
+- Prefer PHPDoc blocks over comments. Never use comments within the code itself unless there is something _very_ complex going on.
+
+## PHPDoc Blocks
+- Add useful array shape type definitions for arrays when appropriate.
+
+## Enums
+- Typically, keys in an Enum should be TitleCase. For example: `FavoritePerson`, `BestLake`, `Monthly`.
 
 
 === inertia-laravel/core rules ===
@@ -132,7 +189,6 @@ Route::get('/users', function () {
 - When creating models for tests, use the factories for the models. Check if the factory has custom states that can be used before manually setting up the model.
 - Faker: Use methods such as `$this->faker->word()` or `fake()->randomDigit()`. Follow existing conventions whether to use `$this->faker` or `fake()`.
 - When creating tests, make use of `php artisan make:test [options] <name>` to create a feature test, and pass `--unit` to create a unit test. Most tests should be feature tests.
-- Use PHP 8 attributes instead of doc-comment annotations for test methods. Replace `/** @test */` with `#[\PHPUnit\Framework\Attributes\Test]` to ensure compatibility with PHPUnit 12 and later versions.
 
 ### Vite Error
 - If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `npm run build` or ask the user to run `npm run dev` or `composer run dev`.
@@ -181,23 +237,11 @@ Route::get('/users', function () {
 - Tests should test all of the happy paths, failure paths, and weird paths.
 - Tests live in the `tests/Feature` and `tests/Unit` directories.
 - Pest tests look and behave like this:
-<code-snippet name="Basic Pest Test Example" lang="php">
-it('is true', function () {
-    expect(true)->toBeTrue();
-});
-</code-snippet>
-
-### PHP 8 Attributes for Test Methods
-- Use PHP 8 attributes instead of doc-comment annotations for test methods to ensure compatibility with PHPUnit 12.
-- Replace `/** @test */` annotations with `#[\PHPUnit\Framework\Attributes\Test]` attributes.
-- Example:
-<code-snippet name="Test Method with PHP 8 Attribute" lang="php">
-#[\PHPUnit\Framework\Attributes\Test]
-public function it_creates_a_user()
-{
-    // Test implementation
-}
-</code-snippet>
+  <code-snippet name="Basic Pest Test Example" lang="php">
+  it('is true', function () {
+  expect(true)->toBeTrue();
+  });
+  </code-snippet>
 
 ### Running Tests
 - Run the minimal number of tests using an appropriate filter before finalizing code edits.
@@ -208,13 +252,13 @@ public function it_creates_a_user()
 
 ### Pest Assertions
 - When asserting status codes on a response, use the specific method like `assertForbidden` and `assertNotFound` instead of using `assertStatus(403)` or similar, e.g.:
-<code-snippet name="Pest Example Asserting postJson Response" lang="php">
-it('returns all', function () {
-    $response = $this->postJson('/api/docs', []);
+  <code-snippet name="Pest Example Asserting postJson Response" lang="php">
+  it('returns all', function () {
+  $response = $this->postJson('/api/docs', []);
 
-    $response->assertSuccessful();
-});
-</code-snippet>
+  $response->assertSuccessful();
+  });
+  </code-snippet>
 
 ### Mocking
 - Mocking can be very helpful when appropriate.
@@ -222,7 +266,7 @@ it('returns all', function () {
 - You can also create partial mocks using the same import or self method.
 
 ### Datasets
-- Use datasets in Pest to simplify tests which have a lot of duplicated data. This is often the case when testing validation rules, so consider going with this solutionwhen writing tests for validation rules.
+- Use datasets in Pest to simplify tests which have a lot of duplicated data. This is often the case when testing validation rules, so consider going with this solution when writing tests for validation rules.
 
 <code-snippet name="Pest Dataset Example" lang="php">
 it('has emails', function (string $email) {
@@ -318,11 +362,11 @@ it('has emails', function (string $email) {
 - In Tailwind v4, you import Tailwind using a regular CSS `@import` statement, not using the `@tailwind` directives used in v3:
 
 <code-snippet name="Tailwind v4 Import Tailwind Diff" lang="diff"
-   - @tailwind base;
-   - @tailwind components;
-   - @tailwind utilities;
-   + @import "tailwindcss";
-</code-snippet>
+- @tailwind base;
+- @tailwind components;
+- @tailwind utilities;
++ @import "tailwindcss";
+  </code-snippet>
 
 
 ### Replaced Utilities
@@ -343,7 +387,6 @@ it('has emails', function (string $email) {
 | decoration-slice | box-decoration-slice |
 | decoration-clone | box-decoration-clone |
 
-
 === shadcn-vue/core rules ===
 
 ## shadcn-vue UI Components
@@ -351,16 +394,13 @@ it('has emails', function (string $email) {
 - UI components should primarily come from https://www.shadcn-vue.com/
 - Use shadcn-vue components as the default choice for UI elements
 - Only when a required component is not available in shadcn-vue, consider:
-  1. Building a new component that follows shadcn-vue patterns
-  2. Searching for alternative components outside of shadcn-vue
+1. Building a new component that follows shadcn-vue patterns
+2. Searching for alternative components outside of shadcn-vue
 - Ensure any custom components follow the same design patterns and styling conventions as shadcn-vue components
-
-
 === tests rules ===
 
 ## Test Enforcement
 
 - Every change must be programmatically tested. Write a new test or update an existing test, then run the affected tests to make sure they pass.
 - Run the minimum number of tests needed to ensure code quality and speed. Use `php artisan test` with a specific filename or filter.
-- Use PHP 8 attributes instead of doc-comment annotations for test methods to ensure compatibility with future versions of PHPUnit. Replace `/** @test */` with `#[\PHPUnit\Framework\Attributes\Test]`.
-</laravel-boost-guidelines>
+  </laravel-boost-guidelines>

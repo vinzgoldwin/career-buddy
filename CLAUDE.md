@@ -14,10 +14,13 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/prompts (PROMPTS) - v0
 - tightenco/ziggy (ZIGGY) - v2
 - laravel/pint (PINT) - v1
+- laravel/sail (SAIL) - v1
 - pestphp/pest (PEST) - v3
 - @inertiajs/vue3 (INERTIA) - v2
 - tailwindcss (TAILWINDCSS) - v4
 - vue (VUE) - v3
+- eslint (ESLINT) - v9
+- prettier (PRETTIER) - v3
 
 
 ## Conventions
