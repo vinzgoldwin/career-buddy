@@ -81,17 +81,18 @@ function practiceHref(q: Question) {
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-      <!-- Gradient Header -->
-      <div class="rounded-xl p-6 text-white bg-linear-to-r from-violet-600 to-fuchsia-600 shadow-sm">
-        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 class="text-xl font-semibold md:text-2xl">Interview Question Bank</h1>
-            <p class="text-white/80 text-sm">Practice real interview questions with smart filters.</p>
-          </div>
-          <div class="flex items-center gap-3 mt-3 md:mt-0">
-            <Badge variant="outline" class="bg-white/10 text-white border-white/20">{{ questions.data.length }} shown</Badge>
-            <Badge variant="outline" class="bg-white/10 text-white border-white/20" v-if="hasFilters">Filters active</Badge>
-          </div>
+      <!-- Header (no gradient background; gradients on badges/buttons) -->
+      <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-1">
+          <h1 class="text-2xl font-bold tracking-tight">Interview Question Bank</h1>
+          <p class="text-muted-foreground text-sm">Practice real interview questions with smart filters.</p>
+        </div>
+        <div class="flex items-center gap-5">
+          <Badge class="bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20">{{ questions.data.length }} shown</Badge>
+          <Badge v-if="hasFilters" class="bg-amber-500 text-white border-transparent">Filters active</Badge>
+          <Link :href="route('interview-answer-evaluations.index')">
+            <Button class="bg-primary-gradient text-white hover:opacity-90">View My Evaluations</Button>
+          </Link>
         </div>
       </div>
 
@@ -173,7 +174,7 @@ function practiceHref(q: Question) {
 
           <div class="mt-4 flex justify-end">
             <Link :href="practiceHref(q)">
-              <Button variant="gradient">Practice with this question</Button>
+              <Button class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white">Practice with this question</Button>
             </Link>
           </div>
         </div>

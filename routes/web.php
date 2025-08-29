@@ -5,6 +5,8 @@ use App\Http\Controllers\Ai\AiAutoApplyController;
 use App\Http\Controllers\Ai\AiJobController;
 use App\Http\Controllers\Ai\AiResumeBuilderController;
 use App\Http\Controllers\Ai\InterviewQuestionBankController;
+use App\Http\Controllers\Ai\InterviewAnswerController;
+use App\Http\Controllers\Ai\InterviewAnswerEvaluationController;
 use App\Http\Controllers\Ai\MockInterviewController;
 use App\Http\Controllers\Ai\ProfileEvaluationController;
 use App\Http\Controllers\BillingController;
@@ -53,6 +55,18 @@ Route::get('interview-question-bank', [InterviewQuestionBankController::class, '
 Route::get('interview-question-bank/{question}', [InterviewQuestionBankController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('interview-question-bank.show');
+
+Route::post('interview-question-bank/{question}/answer', [InterviewAnswerController::class, 'store'])
+    ->middleware(['auth', 'verified'])
+    ->name('interview-question-bank.answer.store');
+
+Route::get('interview-answer-evaluations', [InterviewAnswerEvaluationController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('interview-answer-evaluations.index');
+
+Route::get('interview-answer-evaluations/{evaluation}', [InterviewAnswerEvaluationController::class, 'show'])
+    ->middleware(['auth', 'verified'])
+    ->name('interview-answer-evaluations.show');
 
 Route::get('ai-auto-apply', [AiAutoApplyController::class, 'index'])
     ->middleware(['auth', 'verified'])

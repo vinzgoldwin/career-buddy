@@ -48,8 +48,6 @@ class AiJobController extends Controller
             ]);
         }
 
-        // Inertia flow: flash and redirect back or to builder
-        return redirect()
-            ->route('ai-evaluation.show', ['evaluation' => $evaluation['model']?->id]);
+        return redirect()->route('ai-evaluation.show', ['evaluation' => $evaluation['model']?->id]);
     }
 }
