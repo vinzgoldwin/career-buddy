@@ -15,7 +15,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - tightenco/ziggy (ZIGGY) - v2
 - laravel/pint (PINT) - v1
 - laravel/sail (SAIL) - v1
-- pestphp/pest (PEST) - v3
+- pestphp/pest (PEST) - v4
 - @inertiajs/vue3 (INERTIA) - v2
 - tailwindcss (TAILWINDCSS) - v4
 - vue (VUE) - v3
@@ -120,6 +120,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
 
 - Inertia.js components should be placed in the `resources/js/Pages` directory unless specified differently in the JS bundler (vite.config.js).
 - Use `Inertia::render()` for server-side routing instead of traditional Blade views.
+- Use `search-docs` for accurate guidance on all things Inertia.
 
 <code-snippet lang="php" name="Inertia::render Example">
 // routes/web.php example
@@ -146,6 +147,9 @@ Route::get('/users', function () {
 
 ### Deferred Props & Empty States
 - When using deferred props on the frontend, you should add a nice empty state with pulsing / animated skeleton.
+
+### Inertia Form General Guidance
+- Build forms using the `useForm` helper. Use the code examples and `search-docs` tool with a query of `useForm helper` for guidance.
 
 
 === laravel/core rules ===
@@ -278,6 +282,51 @@ it('has emails', function (string $email) {
 </code-snippet>
 
 
+=== pest/v4 rules ===
+
+## Pest 4
+
+- Pest v4 is a huge upgrade to Pest and offers: browser testing, smoke testing, visual regression testing, test sharding, and faster type coverage.
+- Browser testing is incredibly powerful and useful for this project.
+- Browser tests should live in `tests/Browser/`.
+- Use the `search-docs` tool for detailed guidance on utilizing these features.
+
+### Browser Testing
+- You can use Laravel features like `Event::fake()`, `assertAuthenticated()`, and model factories within Pest v4 browser tests, as well as `RefreshDatabase` (when needed) to ensure a clean state for each test.
+- Interact with the page (click, type, scroll, select, submit, drag-and-drop, touch gestures, etc.) when appropriate to complete the test.
+- If requested, test on multiple browsers (Chrome, Firefox, Safari).
+- If requested, test on different devices and viewports (like iPhone 14 Pro, tablets, or custom breakpoints).
+- Switch color schemes (light/dark mode) when appropriate.
+- Take screenshots or pause tests for debugging when appropriate.
+
+### Example Tests
+
+<code-snippet name="Pest Browser Test Example" lang="php">
+it('may reset the password', function () {
+    Notification::fake();
+
+    $this->actingAs(User::factory()->create());
+
+    $page = visit('/sign-in'); // Visit on a real browser...
+
+    $page->assertSee('Sign In')
+        ->assertNoJavascriptErrors() // or ->assertNoConsoleLogs()
+        ->click('Forgot Password?')
+        ->fill('email', 'nuno@laravel.com')
+        ->click('Send Reset Link')
+        ->assertSee('We have emailed your password reset link!')
+
+    Notification::assertSent(ResetPassword::class);
+});
+</code-snippet>
+
+<code-snippet name="Pest Smoke Testing Example" lang="php">
+$pages = visit(['/', '/about', '/contact']);
+
+$pages->assertNoJavascriptErrors()->assertNoConsoleLogs();
+</code-snippet>
+
+
 === inertia-vue/core rules ===
 
 ## Inertia + Vue
@@ -285,46 +334,45 @@ it('has emails', function (string $email) {
 - Vue components must have a single root element.
 - Use `router.visit()` or `<Link>` for navigation instead of traditional links.
 
-<code-snippet lang="vue" name="Inertia Client Navigation">
-    import { Link } from '@inertiajs/vue3'
+<code-snippet name="Inertia Client Navigation" lang="vue">
 
+    import { Link } from '@inertiajs/vue3'
     <Link href="/">Home</Link>
+
 </code-snippet>
 
-- For form handling, use `router.post` and related methods. Do not use regular forms.
 
+=== inertia-vue/v2 rules ===
 
-<code-snippet lang="vue" name="Inertia Vue Form Example">
-    <script setup>
-    import { reactive } from 'vue'
-    import { router } from '@inertiajs/vue3'
-    import { usePage } from '@inertiajs/vue3'
+## Inertia + Vue Forms
 
-    const page = usePage()
+<code-snippet name="Inertia Vue useForm example" lang="vue">
 
-    const form = reactive({
-      first_name: null,
-      last_name: null,
-      email: null,
+<script setup>
+    import { useForm } from '@inertiajs/vue3'
+
+    const form = useForm({
+        email: null,
+        password: null,
+        remember: false,
     })
+</script>
 
-    function submit() {
-      router.post('/users', form)
-    }
-    </script>
+<template>
+    <form @submit.prevent="form.post('/login')">
+        <!-- email -->
+        <input type="text" v-model="form.email">
+        <div v-if="form.errors.email">{{ form.errors.email }}</div>
+        <!-- password -->
+        <input type="password" v-model="form.password">
+        <div v-if="form.errors.password">{{ form.errors.password }}</div>
+        <!-- remember me -->
+        <input type="checkbox" v-model="form.remember"> Remember Me
+        <!-- submit -->
+        <button type="submit" :disabled="form.processing">Login</button>
+    </form>
+</template>
 
-    <template>
-        <h1>Create {{ page.modelName }}</h1>
-        <form @submit.prevent="submit">
-            <label for="first_name">First name:</label>
-            <input id="first_name" v-model="form.first_name" />
-            <label for="last_name">Last name:</label>
-            <input id="last_name" v-model="form.last_name" />
-            <label for="email">Email:</label>
-            <input id="email" v-model="form.email" />
-            <button type="submit">Submit</button>
-        </form>
-    </template>
 </code-snippet>
 
 
@@ -386,6 +434,17 @@ it('has emails', function (string $email) {
 | overflow-ellipsis | text-ellipsis |
 | decoration-slice | box-decoration-slice |
 | decoration-clone | box-decoration-clone |
+
+=== shadcn-vue/core rules ===
+
+## shadcn-vue UI Components
+
+- UI components should primarily come from https://www.shadcn-vue.com/
+- Use shadcn-vue components as the default choice for UI elements
+- Only when a required component is not available in shadcn-vue, consider:
+1. Building a new component that follows shadcn-vue patterns
+2. Searching for alternative components outside of shadcn-vue
+- Ensure any custom components follow the same design patterns and styling conventions as shadcn-vue components
 
 
 === tests rules ===
