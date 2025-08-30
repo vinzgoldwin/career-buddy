@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Ai;
 
 use App\Http\Controllers\Controller;
 use App\Models\InterviewAnswerEvaluation;
+use App\Services\Ai\BuildInterviewEvaluationPdfService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -51,6 +52,7 @@ class InterviewAnswerEvaluationController extends Controller
         return Inertia::render('ai/InterviewAnswerEvaluation', [
             'evaluation' => [
                 'id' => $evaluation->id,
+                'answer' => $evaluation->answer,
                 'question' => [
                     'id' => $evaluation->question?->id,
                     'title' => $evaluation->question?->title,
@@ -81,17 +83,23 @@ class InterviewAnswerEvaluationController extends Controller
         ]);
     }
 
+    public function download(InterviewAnswerEvaluation $evaluation, BuildInterviewEvaluationPdfService $service)
+    {
+        return $service->download($evaluation);
+    }
+
     protected function extractJustification(string $section, ?string $raw): ?string
     {
-        if (!$raw) {
+        if (! $raw) {
             return null;
         }
-        if (preg_match('/<' . preg_quote($section, '/') . '>(.*?)<\/' . preg_quote($section, '/') . '>/is', $raw, $m)) {
+        if (preg_match('/<'.preg_quote($section, '/').'>(.*?)<\/'.preg_quote($section, '/').'>/is', $raw, $m)) {
             $text = trim($m[1]);
             $text = preg_replace('/\n?\s*Score:\s*\d{1,2}\s*$/i', '', $text);
+
             return trim($text);
         }
+
         return null;
     }
 }
-

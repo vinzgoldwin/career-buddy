@@ -4,12 +4,13 @@ import { Head, router } from '@inertiajs/vue3'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { computed } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { CheckCircle2, XCircle, GaugeCircle, BookOpenText, Sparkles, ListChecks, Lightbulb, Workflow, Scale, ChevronLeft, FileText, Download } from 'lucide-vue-next'
 
 const props = defineProps<{
   evaluation: {
     id: number
+    answer: string | null
     question: { id: number; title: string; category: string; explanation: string | null } | null
     overall_performance: { justification: string | null; score: number | null }
     structural_integrity: { justification: string | null; score: number | null }
@@ -61,11 +62,51 @@ function parseComparativeItem(item: string): { type: 'good' | 'bad' | null; text
 
 function saveAsPdf() {
   try {
-    if (typeof window !== 'undefined' && window?.print) {
-      window.print()
+    const url = route('interview-answer-evaluations.download', props.evaluation.id)
+    if (typeof window !== 'undefined' && window?.open) {
+      window.open(url, '_blank')
+    } else {
+      router.visit(url)
     }
-  } catch (_) {}
+  } catch (_) {
+    router.visit(route('interview-answer-evaluations.download', props.evaluation.id))
+  }
 }
+
+// Collapsible state for long answers
+const isAnswerExpanded = ref(false)
+const showAnswerCollapse = ref(false)
+const answerEl = ref<HTMLElement | null>(null)
+const COLLAPSE_MAX_HEIGHT = 200 // px (~12.5rem)
+
+function measureAnswerOverflow() {
+  nextTick(() => {
+    const el = answerEl.value
+    const text = props.evaluation.answer || ''
+    if (!el || !text.trim().length) {
+      showAnswerCollapse.value = false
+      return
+    }
+    const scroll = el.scrollHeight || 0
+    // Fallback on content length in case layout produces low scrollHeight
+    const longByChars = text.length > 400
+    showAnswerCollapse.value = scroll > COLLAPSE_MAX_HEIGHT || longByChars
+  })
+}
+
+onMounted(() => {
+  measureAnswerOverflow()
+  window.addEventListener('resize', measureAnswerOverflow)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', measureAnswerOverflow)
+})
+
+watch(() => props.evaluation.answer, () => {
+  isAnswerExpanded.value = false
+  measureAnswerOverflow()
+})
 </script>
 
 <template>
@@ -74,7 +115,7 @@ function saveAsPdf() {
       { title: 'Interview Evaluations', href: route('interview-answer-evaluations.index') },
       { title: 'Evaluation', href: '' },
     ]">
-    <div class="flex h-full flex-1 flex-col gap-6 rounded-xl p-4 md:p-6">
+    <div class="flex h-full flex-1 flex-col gap-6 rounded-xl p-4 md:p-6 print-safe">
       <div class="flex items-center justify-between">
         <div class="flex flex-col gap-1">
           <h1 class="text-2xl font-bold tracking-tight">Interview Evaluation</h1>
@@ -95,7 +136,7 @@ function saveAsPdf() {
           </Button>
         </div>
       </div>
-      <Card class="bg-card-gradient">
+      <Card class="bg-card-gradient avoid-break">
         <CardContent class="p-4">
           <div class="flex items-start justify-between gap-3">
             <div class="flex items-center gap-2 text-primary">
@@ -109,6 +150,33 @@ function saveAsPdf() {
           </div>
         </CardContent>
       </Card>
+
+        <!-- User Answer -->
+        <Card class="bg-card-gradient avoid-break">
+            <CardHeader>
+                <CardTitle class="flex items-center gap-2">
+                    <BookOpenText class="h-5 w-5" /> Your Answer
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div
+                    v-if="evaluation.answer && evaluation.answer.trim().length"
+                    ref="answerEl"
+                    class="relative whitespace-pre-line text-sm leading-relaxed text-foreground/90"
+                    :style="!isAnswerExpanded ? { maxHeight: COLLAPSE_MAX_HEIGHT + 'px', overflow: 'hidden' } : {}"
+                >
+                    {{ evaluation.answer }}
+                    <div v-if="showAnswerCollapse && !isAnswerExpanded" class="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background to-transparent"></div>
+                </div>
+                <div v-else class="text-sm text-muted-foreground">No answer provided.</div>
+
+                <div v-if="showAnswerCollapse" class="mt-3">
+                    <Button size="sm" variant="ghost" class="px-2 h-7 text-primary hover:bg-primary/10" @click="isAnswerExpanded = !isAnswerExpanded">
+                        {{ isAnswerExpanded ? 'Show less' : 'Show more' }}
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
 
       <!-- Scores row -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -155,7 +223,7 @@ function saveAsPdf() {
       </div>
 
       <!-- Justifications -->
-      <Card class="bg-card-gradient border-sidebar-border/70">
+      <Card class="bg-card-gradient border-sidebar-border/70 avoid-break">
         <CardHeader>
           <CardTitle class="flex items-center gap-2">
             <GaugeCircle class="h-5 w-5" /> Detailed Justifications
@@ -185,7 +253,7 @@ function saveAsPdf() {
 
       <!-- Lists -->
       <div class="grid md:grid-cols-3 gap-4">
-        <Card class="bg-card-gradient">
+        <Card class="bg-card-gradient avoid-break">
           <CardHeader>
             <CardTitle class="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 class="h-5 w-5" /> Strengths
@@ -202,7 +270,7 @@ function saveAsPdf() {
           </CardContent>
         </Card>
 
-        <Card class="bg-card-gradient">
+        <Card class="bg-card-gradient avoid-break">
           <CardHeader>
             <CardTitle class="flex items-center gap-2 text-amber-600 dark:text-amber-400">
               <ListChecks class="h-5 w-5" /> Priority Improvements
@@ -219,7 +287,7 @@ function saveAsPdf() {
           </CardContent>
         </Card>
 
-        <Card class="bg-card-gradient">
+        <Card class="bg-card-gradient avoid-break">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
               <Scale class="h-5 w-5" /> Comparative Analysis
@@ -247,7 +315,7 @@ function saveAsPdf() {
         </Card>
       </div>
 
-      <Card class="bg-card-gradient">
+      <Card class="bg-card-gradient avoid-break">
         <CardHeader>
           <CardTitle class="flex items-center gap-2 text-sky-700 dark:text-sky-400">
             <Lightbulb class="h-5 w-5" /> Encouraging Advice
@@ -268,3 +336,19 @@ function saveAsPdf() {
     </div>
   </AppLayout>
 </template>
+
+<style scoped>
+/* Ensure print doesn’t crop content if user uses browser print */
+@media print {
+  .print-safe,
+  .print-safe * {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+  .avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+</style>

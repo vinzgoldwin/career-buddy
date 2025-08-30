@@ -6,14 +6,14 @@ import PlaceholderPattern from '../../components/PlaceholderPattern.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'AI Auto Apply',
+        title: 'Auto Apply',
         href: '/ai-auto-apply',
     },
 ];
 </script>
 
 <template>
-    <Head title="AI Auto Apply" />
+    <Head title="Auto Apply" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">

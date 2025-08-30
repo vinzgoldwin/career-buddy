@@ -4,9 +4,9 @@ use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\Ai\AiAutoApplyController;
 use App\Http\Controllers\Ai\AiJobController;
 use App\Http\Controllers\Ai\AiResumeBuilderController;
-use App\Http\Controllers\Ai\InterviewQuestionBankController;
 use App\Http\Controllers\Ai\InterviewAnswerController;
 use App\Http\Controllers\Ai\InterviewAnswerEvaluationController;
+use App\Http\Controllers\Ai\InterviewQuestionBankController;
 use App\Http\Controllers\Ai\MockInterviewController;
 use App\Http\Controllers\Ai\ProfileEvaluationController;
 use App\Http\Controllers\BillingController;
@@ -67,6 +67,10 @@ Route::get('interview-answer-evaluations', [InterviewAnswerEvaluationController:
 Route::get('interview-answer-evaluations/{evaluation}', [InterviewAnswerEvaluationController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('interview-answer-evaluations.show');
+
+Route::get('interview-answer-evaluations/{evaluation}/download', [InterviewAnswerEvaluationController::class, 'download'])
+    ->middleware(['auth', 'verified'])
+    ->name('interview-answer-evaluations.download');
 
 Route::get('ai-auto-apply', [AiAutoApplyController::class, 'index'])
     ->middleware(['auth', 'verified'])

@@ -9,7 +9,7 @@ use Inertia\Inertia;
 class AiAutoApplyController extends Controller
 {
     /**
-     * Display the AI Auto Apply page.
+     * Display the Auto Apply page.
      *
      * @return \Inertia\Response
      */
