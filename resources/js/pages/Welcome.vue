@@ -3,15 +3,15 @@ import { Head, Link } from '@inertiajs/vue3'
 
 const features = [
     {
-        title: 'Resume Evaluation',
-        description: 'Analyse your resume against the job description and receive tailored suggestions to stand out.',
+        title: 'Resume Builder',
+        description: 'Build a standout resume with AI-guided templates and instant suggestions.',
         icon: '📄',
     },
-  // {
-  //   title: 'Mock Interview',
-  //   description: 'Practice interviews with our AI-powered mock interview tool.',
-  //   icon: '💬',
-  // },
+    {
+        title: 'Resume Evaluation',
+        description: 'Analyse your resume against the job description and receive tailored suggestions to stand out.',
+        icon: '💬',
+    },
   {
     title: 'Question Bank',
     description:
@@ -92,4 +92,3 @@ const features = [
     </main>
   </div>
 </template>
-

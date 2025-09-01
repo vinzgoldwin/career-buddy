@@ -13,15 +13,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const features = [
     {
-        title: 'Resume Evaluation',
-        description: 'Analyse your resume against the job description and receive tailored suggestions to stand out.',
+        title: 'Resume Builder',
+        description: 'Build a standout resume with AI-guided templates and instant suggestions.',
         icon: '📄',
     },
-    // {
-    //     title: 'Mock Interview',
-    //     description: 'Practice interviews with our AI-powered mock interview tool',
-    //     icon: '💬',
-    // },
+    {
+        title: 'Resume Evaluation',
+        description: 'Analyse your resume against the job description and receive tailored suggestions to stand out.',
+        icon: '💬',
+    },
     {
         title: 'Question Bank',
         description: 'Real interview questions from top companies, including behavioral, technical, and case questions. Practice anytime with self-guided Q&A.',
