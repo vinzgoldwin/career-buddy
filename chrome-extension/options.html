@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Career Buddy Options</title>
+    <style>
+      :root { --bg:#0b0b0c; --fg:#fafafa; --muted:#9aa1aa; --border:#23252a; --primary:#6ea8fe; --ok:#34d399; --err:#ef4444; }
+      @media (prefers-color-scheme: light) {
+        :root { --bg:#ffffff; --fg:#0b0b0c; --muted:#6b7280; --border:#e5e7eb; --primary:#2563eb; }
+      }
+      body { background: var(--bg); color: var(--fg); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin: 24px auto; max-width: 760px; }
+      h2 { margin: 0 0 8px; }
+      .muted { color: var(--muted); }
+      .card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: color-mix(in srgb, var(--bg) 95%, #6b7280 5%); }
+      label { display:block; font-size: 13px; margin: 10px 0 6px; color: var(--muted); }
+      input[type=text] { width: 100%; padding: 10px; background: #11151a; color: var(--fg); border:1px solid var(--border); border-radius: 8px; }
+      .row { display:flex; gap: 8px; align-items: center; }
+      .between { justify-content: space-between; }
+      button { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: #11151a; color: var(--fg); cursor: pointer; }
+      button.primary { background: var(--primary); color: white; border-color: color-mix(in srgb, var(--primary) 60%, black 40%); }
+      .ok { color: var(--ok); }
+      .err { color: var(--err); }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace; font-size: 12px; }
+      .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .kv { font-size: 13px; }
+      .kv .k { color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <h2>Career Buddy – Extension Options</h2>
+    <p class="muted">Connect your extension using a signed URL to securely sync your profile.</p>
+
+    <div class="card" style="margin-top:12px;">
+      <label for="signedUrl">Signed Profile URL</label>
+      <input id="signedUrl" type="text" placeholder="http://localhost:8000/api/profile/signed?expires=...&signature=...&user=1" />
+      <label for="resumeVariant">Resume Variant (optional)</label>
+      <input id="resumeVariant" type="text" placeholder="e.g., Backend v2" />
+      <div class="row between" style="margin-top:10px;">
+        <div class="row" style="gap:8px;">
+          <button id="save">Save</button>
+          <button id="test" class="primary">Test Fetch</button>
+          <button id="clear">Clear</button>
+        </div>
+        <span id="status" class="muted"></span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <div class="row between">
+        <div class="row" style="gap:8px;">
+          <strong>Profile Preview</strong>
+          <span class="muted" id="updatedAt">—</span>
+        </div>
+        <button id="refresh">Refresh</button>
+      </div>
+      <div class="grid" style="margin-top:10px;">
+        <div class="kv"><span class="k">Name:</span> <span id="p_name">—</span></div>
+        <div class="kv"><span class="k">Email:</span> <span id="p_email">—</span></div>
+        <div class="kv"><span class="k">Phone:</span> <span id="p_phone">—</span></div>
+        <div class="kv"><span class="k">Location:</span> <span id="p_location">—</span></div>
+      </div>
+      <div class="kv" style="margin-top:6px;"><span class="k">Website:</span> <span id="p_website" class="mono">—</span></div>
+    </div>
+
+    <div class="muted mono" style="margin-top:10px;">
+      Generate a signed URL in your app:
+      <div>URL::temporarySignedRoute('api.profile.signed', now()->addDays(30), ['user' => auth()->id()])</div>
+    </div>
+
+    <script src="options.js"></script>
+  </body>
+  </html>

@@ -9,6 +9,8 @@ use App\Http\Controllers\Ai\InterviewAnswerEvaluationController;
 use App\Http\Controllers\Ai\InterviewQuestionBankController;
 use App\Http\Controllers\Ai\MockInterviewController;
 use App\Http\Controllers\Ai\ProfileEvaluationController;
+use App\Http\Controllers\Api\AutofillEventController;
+use App\Http\Controllers\Api\ProfileController as ApiProfileController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\PdfController;
 use Illuminate\Support\Facades\Auth;
@@ -118,3 +120,22 @@ require __DIR__.'/auth.php';
 Route::post('/pdf/extract-text', [PdfController::class, 'extractText'])
     ->middleware(['auth', 'verified'])
     ->name('pdf.extract-text');
+
+// API (session-authenticated)
+Route::get('/api/profile', [ApiProfileController::class, 'self'])
+    ->middleware(['auth'])
+    ->name('api.profile');
+
+// API (signed URL for extensions / external tools)
+// Generate with: URL::temporarySignedRoute('api.profile.signed', now()->addDays(30), ['user' => auth()->id()])
+Route::get('/api/profile/signed', [ApiProfileController::class, 'signed'])
+    ->name('api.profile.signed')
+    ->middleware('signed');
+
+Route::get('/api/profile/signed/generate', [ApiProfileController::class, 'generateSigned'])
+    ->middleware(['auth'])
+    ->name('api.profile.signed.generate');
+
+// Log autofill events via signed params (no session/cookies required)
+Route::post('/api/autofill-events/signed', [AutofillEventController::class, 'storeSigned'])
+    ->name('api.autofill-events.store-signed');

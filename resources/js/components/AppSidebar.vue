@@ -35,7 +35,7 @@ const serviceNavItems: NavItem[] = [
         icon: Notebook,
     },
     {
-        title: 'Auto Apply',
+        title: 'Easy Apply',
         href: '/ai-auto-apply',
         icon: Send,
     },

@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'pdf/extract-text',
             'ai-resume-builder',
             'ai-resume-builder/upload',
+            'api/autofill-events/signed',
         ]);
 
         // Add specific CSRF exception for DELETE requests to settings/profile

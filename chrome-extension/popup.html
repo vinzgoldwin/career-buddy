@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Career Buddy Autofill</title>
+    <style>
+      :root {
+        --bg: #0b0b0c; --fg: #fafafa; --muted:#9aa1aa; --border:#23252a; --primary:#6ea8fe; --ok:#34d399; --warn:#f59e0b; --err:#ef4444;
+      }
+      @media (prefers-color-scheme: light) {
+        :root { --bg:#ffffff; --fg:#0b0b0c; --muted:#6b7280; --border:#e5e7eb; --primary:#2563eb; }
+      }
+      html, body { width: 340px; margin:0; padding:0; }
+      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; background: var(--bg); color: var(--fg); }
+      .wrap { padding: 12px 12px 10px; }
+      .row { display: flex; gap: 8px; align-items: center; }
+      .between { justify-content: space-between; }
+      .muted { color: var(--muted); font-size: 12px; }
+      .card { border: 1px solid var(--border); border-radius: 10px; padding: 10px; background: color-mix(in srgb, var(--bg) 92%, #6b7280 8%); }
+      .h { font-weight: 600; }
+      .status-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--warn); display:inline-block; }
+      .status-dot.ok { background: var(--ok); }
+      .status-dot.err { background: var(--err); }
+      button { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: #11151a; color: var(--fg); cursor: pointer; }
+      button.primary { background: var(--primary); color: white; border-color: color-mix(in srgb, var(--primary) 60%, black 40%); }
+      button:disabled { opacity: .6; cursor: not-allowed; }
+      .btns { display:flex; gap: 8px; }
+      .pill { font-size: 11px; border:1px solid var(--border); padding: 2px 6px; border-radius: 999px; color: var(--muted); }
+      .link { color: var(--primary); text-decoration: none; }
+      .hint { margin-top:6px; }
+      .divider { height:1px; background: var(--border); margin: 10px 0; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace; font-size: 11px; }
+      .right { margin-left:auto; }
+      .icon { width: 16px; height: 16px; opacity: .9; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="row between" style="margin-bottom: 10px;">
+        <div class="row" style="gap:10px;">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3Z" fill="currentColor" opacity=".14"/><path d="M12 3v18M4 7.5l8 4.5 8-4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <div>
+            <div class="h">Career Buddy Autofill</div>
+            <div class="muted" id="detected">Detecting site…</div>
+          </div>
+        </div>
+        <a class="link" href="options.html" target="_blank">Options</a>
+      </div>
+
+      <div class="card">
+        <div class="row between">
+          <div class="row" style="gap:8px;">
+            <span id="statusDot" class="status-dot"></span>
+            <div>
+              <div class="h" id="profileName">No profile</div>
+              <div class="muted" id="lastSync">Not synced</div>
+            </div>
+          </div>
+          <span class="pill mono" id="sitePill">—</span>
+        </div>
+        <div class="divider"></div>
+        <div class="btns">
+          <button id="sync">Sync Profile</button>
+          <button id="fill" class="primary right">Fill This Page</button>
+        </div>
+        <div class="hint muted" id="status">Ready</div>
+      </div>
+
+      <div style="margin-top: 8px;" class="muted mono" id="debug"></div>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+  </html>

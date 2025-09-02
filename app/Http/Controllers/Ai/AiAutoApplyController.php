@@ -3,18 +3,39 @@
 namespace App\Http\Controllers\Ai;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\JobAutofillEvent;
 use Inertia\Inertia;
 
 class AiAutoApplyController extends Controller
 {
     /**
-     * Display the Auto Apply page.
+     * Display the Easy Apply page.
      *
      * @return \Inertia\Response
      */
     public function index()
     {
-        return Inertia::render('ai/AiAutoApply');
+        $events = JobAutofillEvent::query()
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->paginate(10)
+            ->through(function (JobAutofillEvent $e) {
+                return [
+                    'id' => $e->id,
+                    'resume_variant' => $e->resume_variant,
+                    'job_title' => $e->job_title,
+                    'company' => $e->company,
+                    'source_host' => $e->source_host,
+                    'page_url' => $e->page_url,
+                    'fields' => $e->fields,
+                    'field_details' => $e->field_details,
+                    'filled_count' => $e->filled_count,
+                    'created_at' => $e->created_at?->toDateTimeString(),
+                ];
+            });
+
+        return Inertia::render('ai/AiAutoApply', [
+            'events' => $events,
+        ]);
     }
 }

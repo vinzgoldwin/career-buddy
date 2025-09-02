@@ -19,7 +19,7 @@ const features = [
     icon: '📚',
   },
   {
-    title: 'Auto Apply',
+    title: 'Easy Apply',
     description:
       'Apply to many jobs at once. Positions are smart-matched to your resume.',
     icon: '🚀',
