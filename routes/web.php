@@ -1,18 +1,18 @@
 <?php
 
 use App\Http\Controllers\AffiliateController;
-use App\Http\Controllers\Ai\AiAutoApplyController;
-use App\Http\Controllers\Ai\AiJobController;
-use App\Http\Controllers\Ai\AiResumeBuilderController;
-use App\Http\Controllers\Ai\InterviewAnswerController;
-use App\Http\Controllers\Ai\InterviewAnswerEvaluationController;
-use App\Http\Controllers\Ai\InterviewQuestionBankController;
-use App\Http\Controllers\Ai\MockInterviewController;
-use App\Http\Controllers\Ai\ProfileEvaluationController;
+use App\Http\Controllers\AiJobController;
 use App\Http\Controllers\Api\AutofillEventController;
 use App\Http\Controllers\Api\ProfileController as ApiProfileController;
 use App\Http\Controllers\BillingController;
+use App\Http\Controllers\EasyApply\EasyApplyController;
+use App\Http\Controllers\Evaluations\ProfileEvaluationController;
+use App\Http\Controllers\Interview\InterviewAnswerController;
+use App\Http\Controllers\Interview\InterviewAnswerEvaluationController;
+use App\Http\Controllers\Interview\InterviewQuestionBankController;
+use App\Http\Controllers\Interview\MockInterviewController;
 use App\Http\Controllers\PdfController;
+use App\Http\Controllers\Resume\AiResumeBuilderController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -74,9 +74,9 @@ Route::get('interview-answer-evaluations/{evaluation}/download', [InterviewAnswe
     ->middleware(['auth', 'verified'])
     ->name('interview-answer-evaluations.download');
 
-Route::get('ai-auto-apply', [AiAutoApplyController::class, 'index'])
+Route::get('easy-apply', [EasyApplyController::class, 'index'])
     ->middleware(['auth', 'verified'])
-    ->name('ai-auto-apply');
+    ->name('easy-apply');
 
 Route::get('billing', [BillingController::class, 'index'])
     ->middleware(['auth', 'verified'])

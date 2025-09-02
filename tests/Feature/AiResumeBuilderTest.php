@@ -25,7 +25,7 @@ class AiResumeBuilderTest extends TestCase
             'email' => 'john@example.com',
             'location' => 'New York, NY',
             'website' => 'https://johndoe.com',
-            'summary' => 'Experienced software developer'
+            'summary' => 'Experienced software developer',
         ]);
 
         // Create some related data with proper date formats
@@ -44,7 +44,7 @@ class AiResumeBuilderTest extends TestCase
             'company' => 'Tech Corp',
             'start_date' => '2018-01-01',
             'end_date' => '2022-12-31',
-            'description' => 'Worked on various web applications'
+            'description' => 'Worked on various web applications',
         ]);
 
         LicenseAndCertification::factory()->create([
@@ -76,7 +76,7 @@ class AiResumeBuilderTest extends TestCase
 
         // Check that the prefill data is passed to the view
         $response->assertInertia(fn ($page) => $page
-            ->component('ai/AiResumeBuilder')
+            ->component('resume/AiResumeBuilder')
             ->has('prefillData')
             ->where('prefillData.name', 'John Doe')
             ->where('prefillData.email', 'john@example.com')
@@ -97,7 +97,7 @@ class AiResumeBuilderTest extends TestCase
         // Create a user with no existing data
         $user = User::factory()->create([
             'name' => 'Jane Doe',
-            'email' => 'jane@example.com'
+            'email' => 'jane@example.com',
         ]);
 
         // Act as the user and visit the resume builder page
@@ -108,7 +108,7 @@ class AiResumeBuilderTest extends TestCase
 
         // Check that default empty arrays are provided
         $response->assertInertia(fn ($page) => $page
-            ->component('ai/AiResumeBuilder')
+            ->component('resume/AiResumeBuilder')
             ->has('prefillData')
             ->where('prefillData.name', 'Jane Doe')
             ->where('prefillData.email', 'jane@example.com')
@@ -138,17 +138,17 @@ class AiResumeBuilderTest extends TestCase
                     [
                         'school' => 'University of California',
                         'start_date' => '2023-01-01', // Invalid format (should be MM/YYYY)
-                    ]
-                ]
+                    ],
+                ],
             ]);
 
         // Debug the response
-        echo "Response status: " . $response->status() . "\n";
+        echo 'Response status: '.$response->status()."\n";
         $response->dumpSession();
 
         // Should fail validation
         $response->assertSessionHasErrors([
-            'educations.0.start_date'
+            'educations.0.start_date',
         ]);
 
         // Try with valid MM/YYYY format
@@ -161,8 +161,8 @@ class AiResumeBuilderTest extends TestCase
                     [
                         'school' => 'University of California',
                         'start_date' => '01/2023', // Valid format
-                    ]
-                ]
+                    ],
+                ],
             ]);
 
         // Should pass validation

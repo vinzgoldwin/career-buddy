@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Ai;
+namespace App\Http\Controllers\Interview;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class MockInterviewController extends Controller
@@ -15,6 +14,6 @@ class MockInterviewController extends Controller
      */
     public function index()
     {
-        return Inertia::render('ai/MockInterview');
+        return Inertia::render('interview/MockInterview');
     }
 }

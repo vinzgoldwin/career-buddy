@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Ai;
+namespace App\Http\Controllers\Interview;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Ai\SubmitInterviewAnswerRequest;
 use App\Models\InterviewQuestion;
 use App\Services\Ai\InterviewAnswerEvaluationService;
 use Illuminate\Http\JsonResponse;
-use App\Http\Requests\Ai\SubmitInterviewAnswerRequest;
 
 class InterviewAnswerController extends Controller
 {

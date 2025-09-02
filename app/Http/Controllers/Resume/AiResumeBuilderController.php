@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Ai;
+namespace App\Http\Controllers\Resume;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ai\ResumeStoreRequest;
@@ -36,7 +36,7 @@ class AiResumeBuilderController extends Controller
 
         $aiParsedData = session('ai_parsed_data');
 
-        return Inertia::render('ai/AiResumeBuilder', [
+        return Inertia::render('resume/AiResumeBuilder', [
             'employmentTypes' => $employmentTypes,
             'aiParsedData' => $aiParsedData ?: null,
             'prefillData' => $this->resumeBuilderService->getPrefillData($user),
@@ -55,7 +55,7 @@ class AiResumeBuilderController extends Controller
 
         $aiParsedData = session('ai_parsed_data');
 
-        return Inertia::render('ai/ResumeEditor', [
+        return Inertia::render('resume/ResumeEditor', [
             'employmentTypes' => $employmentTypes,
             'aiParsedData' => $aiParsedData ?: null,
             'prefillData' => $this->resumeBuilderService->getPrefillData($user),

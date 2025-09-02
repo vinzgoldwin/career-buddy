@@ -7,7 +7,7 @@ import PlaceholderPattern from '../../components/PlaceholderPattern.vue';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Easy Apply',
-        href: '/ai-auto-apply',
+        href: '/easy-apply',
     },
 ];
 

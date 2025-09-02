@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Ai;
+namespace App\Http\Controllers\Interview;
 
 use App\Http\Controllers\Controller;
 use App\Models\InterviewAnswerEvaluation;
@@ -40,7 +40,7 @@ class InterviewAnswerEvaluationController extends Controller
                 ];
             });
 
-        return Inertia::render('ai/InterviewAnswerEvaluations', [
+        return Inertia::render('interview/InterviewAnswerEvaluations', [
             'evaluations' => $evaluations,
         ]);
     }
@@ -49,7 +49,7 @@ class InterviewAnswerEvaluationController extends Controller
     {
         $evaluation->load(['question:id,title,category,explanation']);
 
-        return Inertia::render('ai/InterviewAnswerEvaluation', [
+        return Inertia::render('interview/InterviewAnswerEvaluation', [
             'evaluation' => [
                 'id' => $evaluation->id,
                 'answer' => $evaluation->answer,

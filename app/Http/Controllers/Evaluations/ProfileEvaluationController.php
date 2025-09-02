@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Ai;
+namespace App\Http\Controllers\Evaluations;
 
 use App\Http\Controllers\Controller;
 use App\Models\Education;
@@ -35,7 +35,7 @@ class ProfileEvaluationController extends Controller
                 ];
             });
 
-        return Inertia::render('ai/ProfileEvaluations', [
+        return Inertia::render('evaluations/ProfileEvaluations', [
             'evaluations' => $evaluations,
         ]);
     }
@@ -148,7 +148,7 @@ class ProfileEvaluationController extends Controller
             ];
         })->toArray();
 
-        return Inertia::render('ai/ProfileEvaluation', [
+        return Inertia::render('evaluations/ProfileEvaluation', [
             'evaluation' => [
                 'id' => $evaluation->id,
                 'total_score' => $evaluation->total_score,

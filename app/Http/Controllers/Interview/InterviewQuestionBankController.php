@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Ai;
+namespace App\Http\Controllers\Interview;
 
 use App\Http\Controllers\Controller;
 use App\Models\InterviewQuestion;
@@ -47,7 +47,7 @@ class InterviewQuestionBankController extends Controller
 
         $difficulties = ['Easy', 'Medium', 'Hard'];
 
-        return Inertia::render('ai/InterviewQuestionBank', [
+        return Inertia::render('interview/InterviewQuestionBank', [
             'filters' => [
                 'search' => $search,
                 'category' => $category,
@@ -75,7 +75,7 @@ class InterviewQuestionBankController extends Controller
         // Optionally increment views when viewing details
         $question->increment('views_count');
 
-        return Inertia::render('ai/InterviewQuestion', [
+        return Inertia::render('interview/InterviewQuestion', [
             'question' => [
                 'id' => $question->id,
                 'title' => $question->title,

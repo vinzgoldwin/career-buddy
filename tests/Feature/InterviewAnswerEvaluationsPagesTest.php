@@ -24,7 +24,7 @@ it('lists interview answer evaluations', function () {
     $response = get(route('interview-answer-evaluations.index'));
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
-        ->component('ai/InterviewAnswerEvaluations')
+        ->component('interview/InterviewAnswerEvaluations')
         ->has('evaluations.data', 1)
     );
 });
@@ -47,9 +47,8 @@ it('shows a single interview answer evaluation', function () {
     $response = get(route('interview-answer-evaluations.show', $e));
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
-        ->component('ai/InterviewAnswerEvaluation')
+        ->component('interview/InterviewAnswerEvaluation')
         ->where('evaluation.id', $e->id)
         ->where('evaluation.question.title', 'Tell me about yourself')
     );
 });
-

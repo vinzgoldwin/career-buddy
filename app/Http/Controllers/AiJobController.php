@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\Ai;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\Ai\ParseJobRequest;
 use App\Services\Ai\ProfileEvaluationService;
 use App\Services\Job\JobDescriptionParserService;

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Ai;
+namespace App\Http\Controllers\EasyApply;
 
 use App\Http\Controllers\Controller;
 use App\Models\JobAutofillEvent;
 use Inertia\Inertia;
 
-class AiAutoApplyController extends Controller
+class EasyApplyController extends Controller
 {
     /**
      * Display the Easy Apply page.
@@ -34,7 +34,7 @@ class AiAutoApplyController extends Controller
                 ];
             });
 
-        return Inertia::render('ai/AiAutoApply', [
+        return Inertia::render('easy-apply/EasyApply', [
             'events' => $events,
         ]);
     }

@@ -23,7 +23,7 @@ it('shows question details with explanation when available', function () {
     $response = get(route('interview-question-bank.show', $q));
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
-        ->component('ai/InterviewQuestion')
+        ->component('interview/InterviewQuestion')
         ->where('question.title', 'Tell me about your biggest failure.')
         ->where('question.explanation', 'Sample explanation for test.')
     );

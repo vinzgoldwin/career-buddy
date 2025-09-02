@@ -14,7 +14,7 @@ it('includes the answer in the evaluation show props', function () {
         ->get(route('interview-answer-evaluations.show', $evaluation));
 
     $response->assertInertia(fn (Assert $page) => $page
-        ->component('ai/InterviewAnswerEvaluation')
+        ->component('interview/InterviewAnswerEvaluation')
         ->where('evaluation.id', $evaluation->id)
         ->where('evaluation.answer', $evaluation->answer)
     );

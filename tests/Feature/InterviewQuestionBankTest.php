@@ -30,7 +30,7 @@ it('shows paginated interview questions with filters', function () {
     $response = get(route('interview-question-bank'));
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
-        ->component('ai/InterviewQuestionBank')
+        ->component('interview/InterviewQuestionBank')
         ->has('questions.data', 10)
         ->has('questions.links')
         ->has('categories')

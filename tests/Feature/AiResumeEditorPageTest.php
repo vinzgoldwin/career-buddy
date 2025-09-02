@@ -21,7 +21,7 @@ class AiResumeEditorPageTest extends TestCase
         $response->assertStatus(200);
 
         $response->assertInertia(fn ($page) => $page
-            ->component('ai/ResumeEditor')
+            ->component('resume/ResumeEditor')
             ->has('prefillData')
         );
     }
