@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
+import GradualSpacing from '@/components/GradualSpacing.vue'
+import GridBeams from '@/components/magicui/GridBeams.vue'
 
 const features = [
     {
@@ -48,13 +50,23 @@ const features = [
     </header>
 
     <main class="flex w-full items-center justify-center lg:grow">
-      <div class="w-full max-w-4xl rounded-xl border border-sidebar-border/70 bg-card-gradient p-8 text-center shadow-sm dark:border-sidebar-border">
-        <h1 class="mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-4xl font-bold text-transparent">
-          Welcome to Career Buddy
-        </h1>
-        <p class="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">
-          Your all-in-one platform to supercharge your job search and career growth.
-        </p>
+      <GridBeams class="w-full max-w-4xl rounded-xl border border-sidebar-border/70 p-8 text-center shadow-sm dark:border-sidebar-border" :grid-size="44" :ray-count="18" :ray-speed="1.1" :ray-opacity="0.4">
+        <div class="mb-6">
+          <GradualSpacing
+            :duration="500"
+            :delay-multiple="60"
+            text="Welcome to Career Buddy"
+            class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-4xl font-bold text-transparent"
+          />
+        </div>
+        <div class="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">
+          <GradualSpacing
+            :duration="450"
+            :delay-multiple="45"
+            text="Your all-in-one platform to supercharge your job search and career growth."
+            class="text-lg"
+          />
+        </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div
@@ -88,7 +100,7 @@ const features = [
             </Link>
           </div>
         </div>
-      </div>
+      </GridBeams>
     </main>
   </div>
 </template>

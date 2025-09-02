@@ -3,6 +3,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
+import GradualSpacing from '@/components/GradualSpacing.vue';
+import GridBeams from '@/components/magicui/GridBeams.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -40,14 +42,24 @@ const features = [
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <div class="bg-app-gradient rounded-xl border border-sidebar-border/70 dark:border-sidebar-border p-8">
+            <GridBeams class="rounded-xl border border-sidebar-border/70 dark:border-sidebar-border p-8" :grid-size="44" :ray-count="18" :ray-speed="1.1" :ray-opacity="0.4">
                 <div class="max-w-4xl mx-auto text-center">
-                    <h1 class="text-4xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                        Welcome to Career Buddy
-                    </h1>
-                    <p class="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-                        Your all-in-one platform to supercharge your job search and career growth
-                    </p>
+                    <div class="mb-6">
+                        <GradualSpacing
+                            :duration="50"
+                            :delay-multiple="40"
+                            text="Welcome to Career Buddy"
+                            class="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+                        />
+                    </div>
+                    <div class="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
+                        <GradualSpacing
+                            :duration="50"
+                            :delay-multiple="40"
+                            text="Your all-in-one platform to supercharge your job search and career growth"
+                            class="text-lg"
+                        />
+                    </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
                         <div
@@ -74,7 +86,7 @@ const features = [
                         </Link>
                     </div>
                 </div>
-            </div>
+            </GridBeams>
         </div>
     </AppLayout>
 </template>
