@@ -2,9 +2,8 @@
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType } from '@/types';
+import AnimatedThemeToggler from '@/components/magicui/AnimatedThemeToggler.vue';
 import { useAppearance } from '@/composables/useAppearance';
-import { Moon, Sun } from 'lucide-vue-next';
-import { computed } from 'vue';
 
 withDefaults(
     defineProps<{
@@ -17,9 +16,6 @@ withDefaults(
 
 const { appearance, updateAppearance } = useAppearance();
 
-const currentIcon = computed(() => {
-    return appearance.value === 'dark' ? Moon : Sun;
-});
 </script>
 
 <template>
@@ -35,13 +31,7 @@ const currentIcon = computed(() => {
         
         <!-- Theme Toggle -->
         <div class="flex items-center">
-            <button
-                @click="updateAppearance(appearance === 'light' ? 'dark' : 'light')"
-                class="rounded-md p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
-                :aria-label="`Switch to ${appearance === 'light' ? 'dark' : 'light'} mode`"
-            >
-                <component :is="currentIcon" class="h-5 w-5" />
-            </button>
+            <AnimatedThemeToggler />
         </div>
     </header>
 </template>

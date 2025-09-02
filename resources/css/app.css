@@ -215,3 +215,10 @@
 @utility bg-sidebar-gradient {
     background-image: var(--gradient-sidebar);
 }
+
+/* View Transitions (for animated theme toggler) */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
