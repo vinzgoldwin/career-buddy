@@ -10,7 +10,7 @@ import { Collapsible } from '@/components/ui/collapsible'
 import { CollapsibleContent } from '@/components/ui/collapsible'
 import { CollapsibleTrigger } from '@/components/ui/collapsible'
 import { notifySuccess, notifyError } from '@/lib/notify'
-import { Link as LinkIcon, Calendar, GraduationCap, Briefcase, User as UserIcon, Globe, Mail, Folder, CheckCircle2, ChevronDown, ChevronRight, Award, ListChecks } from 'lucide-vue-next'
+import { Link as LinkIcon, GraduationCap, Briefcase, User as UserIcon, Folder, ChevronDown, Award, ListChecks } from 'lucide-vue-next'
 
 interface Education { id: number | null; school: string; degree: string; field_of_study: string; start_date: string; end_date: string; currently_studying: boolean; grade: string; activities: string }
 interface Experience { id: number | null; title: string; company: string; location: string; start_date: string; end_date: string; currently_working: boolean; employment_type_id: number | null; industry: string; description: string }

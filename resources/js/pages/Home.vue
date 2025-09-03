@@ -49,7 +49,7 @@ const features = [
                             :duration="50"
                             :delay-multiple="40"
                             text="Welcome to Career Buddy"
-                            class="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+                            class="text-4xl font-bold tracking-tight text-foreground"
                         />
                     </div>
                     <div class="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
@@ -71,7 +71,7 @@ const features = [
                                 <span class="text-2xl">{{ feature.icon }}</span>
                                 <div>
                                     <h3 class="text-xl font-semibold mb-2">{{ feature.title }}</h3>
-                                    <p class="text-muted-foreground">{{ feature.description }}</p>
+                                    <p class="text-foreground/80 dark:text-muted-foreground">{{ feature.description }}</p>
                                 </div>
                             </div>
                         </div>
