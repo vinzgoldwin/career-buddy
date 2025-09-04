@@ -4,7 +4,7 @@ import type { NotificationItem, NotificationType, NotificationPosition } from '@
 let uid = 1
 
 const notifications = ref<NotificationItem[]>([])
-const position = ref<NotificationPosition>('bottom-right')
+const position = ref<NotificationPosition>('top-center')
 
 export function useToastManager() {
   function addNotification(type: NotificationType, title: string, message?: string, showIcon = true, duration?: number): number {
@@ -43,4 +43,3 @@ export function useToastManager() {
 
   return { notifications, position, addNotification, addLoadingWithSuccess, close, setPosition, success, error, warning, info, loading }
 }
-

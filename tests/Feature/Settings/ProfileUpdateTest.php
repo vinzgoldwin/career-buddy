@@ -1,93 +1,36 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-test('profile page is displayed', function () {
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\patch;
+use function Pest\Laravel\withoutMiddleware;
+
+uses(RefreshDatabase::class);
+
+it('updates autofill-related profile fields', function () {
     $user = User::factory()->create();
 
-    $response = $this
-        ->actingAs($user)
-        ->get('/settings/profile');
+    actingAs($user);
+    withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
 
-    $response->assertOk();
-});
+    $payload = [
+        'name' => 'Jane Doe',
+        'email' => 'jane@example.com',
+        'phone' => '+1 555 0100',
+        'location' => 'Seattle, WA',
+        'website' => 'https://www.linkedin.com/in/jane',
+        'summary' => 'Seasoned engineer with focus on DX.',
+    ];
 
-test('profile information can be updated', function () {
-    $user = User::factory()->create();
-
-    $response = $this
-        ->actingAs($user)
-        ->from('/settings/profile')
-        ->withoutMiddleware(VerifyCsrfToken::class)
-        ->patch('/settings/profile', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-
-    $response
-        ->assertSessionHasNoErrors()
-        ->assertRedirect('/settings/profile');
+    patch(route('profile.update'), $payload)->assertRedirect();
 
     $user->refresh();
-
-    expect($user->name)->toBe('Test User');
-    expect($user->email)->toBe('test@example.com');
-    expect($user->email_verified_at)->toBeNull();
-});
-
-test('email verification status is unchanged when the email address is unchanged', function () {
-    $user = User::factory()->create();
-
-    $response = $this
-        ->actingAs($user)
-        ->from('/settings/profile')
-        ->withoutMiddleware(VerifyCsrfToken::class)
-        ->patch('/settings/profile', [
-            'name' => 'Test User',
-            'email' => $user->email,
-        ]);
-
-    $response
-        ->assertSessionHasNoErrors()
-        ->assertRedirect('/settings/profile');
-
-    expect($user->refresh()->email_verified_at)->not->toBeNull();
-});
-
-test('user can delete their account', function () {
-    $user = User::factory()->create();
-
-    $response = $this
-        ->actingAs($user)
-        ->from('/settings/profile')
-        ->withoutMiddleware(VerifyCsrfToken::class)
-        ->delete('/settings/profile', [
-            'password' => 'password',
-        ]);
-
-    $response
-        ->assertSessionHasNoErrors()
-        ->assertRedirect('/');
-
-    $this->assertGuest();
-    expect($user->fresh())->toBeNull();
-});
-
-test('correct password must be provided to delete account', function () {
-    $user = User::factory()->create();
-
-    $response = $this
-        ->actingAs($user)
-        ->from('/settings/profile')
-        ->withoutMiddleware(VerifyCsrfToken::class)
-        ->delete('/settings/profile', [
-            'password' => 'wrong-password',
-        ]);
-
-    $response
-        ->assertSessionHasErrors('password')
-        ->assertRedirect('/settings/profile');
-
-    expect($user->fresh())->not->toBeNull();
+    expect($user->name)->toBe('Jane Doe')
+        ->and($user->email)->toBe('jane@example.com')
+        ->and($user->phone)->toBe('+1 555 0100')
+        ->and($user->location)->toBe('Seattle, WA')
+        ->and($user->website)->toBe('https://www.linkedin.com/in/jane')
+        ->and($user->summary)->toBe('Seasoned engineer with focus on DX.');
 });

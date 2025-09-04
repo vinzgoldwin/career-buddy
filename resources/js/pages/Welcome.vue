@@ -50,7 +50,7 @@ const features = [
     </header>
 
     <main class="flex w-full items-center justify-center lg:grow">
-      <GridBeams class="w-full max-w-4xl rounded-xl border border-sidebar-border/70 p-8 text-center shadow-sm dark:border-sidebar-border" :grid-size="44" :ray-count="18" :ray-speed="1.1" :ray-opacity="0.4">
+      <GridBeams class="w-full max-w-5xl rounded-xl border border-sidebar-border/70 p-8 text-center shadow-sm dark:border-sidebar-border" :grid-size="44" :ray-count="18" :ray-speed="1.1" :ray-opacity="0.4">
         <div class="mb-6">
           <GradualSpacing
             :duration="500"

@@ -19,6 +19,7 @@ const emit = defineEmits<{ (e: 'close'): void }>()
 
 const timer = ref<ReturnType<typeof setTimeout> | null>(null)
 const isLoading = computed(() => props.type === 'loading')
+const hasDuration = computed(() => !!props.duration && !isLoading.value)
 
 onMounted(() => {
   if (props.duration && !isLoading.value) {
@@ -57,6 +58,22 @@ function Icon() {
     case 'loading': return Loader2
   }
 }
+
+// Progress bar color based on type
+const progressBarClass = computed(() => {
+  switch (props.type) {
+    case 'success':
+      return 'bg-emerald-500/80'
+    case 'error':
+      return 'bg-rose-500/80'
+    case 'warning':
+      return 'bg-amber-500/80'
+    case 'info':
+      return 'bg-sky-500/80'
+    default:
+      return 'bg-foreground/50'
+  }
+})
 </script>
 
 <template>
@@ -68,6 +85,15 @@ function Icon() {
     class="relative w-full overflow-hidden rounded-lg border p-4 shadow-lg backdrop-blur-[2px]"
     :class="typeClasses"
   >
+    <!-- Progress bar (duration countdown) -->
+    <div v-if="hasDuration" class="absolute bottom-0 left-0 h-0.5 w-full bg-transparent">
+      <div
+        class="h-full origin-left"
+        :class="progressBarClass"
+        :style="{ animation: 'toast-countdown linear forwards', animationDuration: `${props.duration}ms` }"
+      />
+    </div>
+
     <div class="flex items-start gap-3">
       <component :is="Icon()" v-if="Icon()" class="h-5 w-5 shrink-0" :class="{ 'animate-spin': isLoading }" />
       <div class="min-w-0">
@@ -89,3 +115,9 @@ function Icon() {
   
 </template>
 
+<style scoped>
+@keyframes toast-countdown {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+</style>
